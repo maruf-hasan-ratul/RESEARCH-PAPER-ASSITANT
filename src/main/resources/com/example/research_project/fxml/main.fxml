@@ -56,6 +56,18 @@
 
                 <Button fx:id="btnSearch" maxWidth="1.7976931348623157E308" onAction="#showSearch"
                         styleClass="nav-button" text="🔍  Search &amp; Filter" />
+
+                <Label style="-fx-font-size: 10px; -fx-text-fill: #64748B; -fx-font-weight: bold; -fx-padding: 10 8 2 8;"
+                       text="EXTRAS" />
+
+                <Button fx:id="btnFavorites" maxWidth="1.7976931348623157E308" onAction="#showFavorites"
+                        styleClass="nav-button" text="⭐  Favorites" />
+
+                <Button fx:id="btnCompare" maxWidth="1.7976931348623157E308" onAction="#showComparison"
+                        styleClass="nav-button" text="⚖️  Compare Papers" />
+
+                <Button fx:id="btnReports" maxWidth="1.7976931348623157E308" onAction="#showReports"
+                        styleClass="nav-button" text="📑  Research Reports" />
             </VBox>
 
             <!-- Spacer pushes footer to bottom -->

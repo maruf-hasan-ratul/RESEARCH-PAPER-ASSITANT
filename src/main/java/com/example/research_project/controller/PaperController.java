@@ -29,10 +29,12 @@ public class PaperController {
 
     @FXML private TableView<Paper>           papersTable;
     @FXML private TableColumn<Paper,Integer> colId;
+    @FXML private TableColumn<Paper,String>  colFavorite;
     @FXML private TableColumn<Paper,String>  colTitle;
     @FXML private TableColumn<Paper,String>  colAuthors;
     @FXML private TableColumn<Paper,Integer> colYear;
     @FXML private TableColumn<Paper,String>  colCategory;
+    @FXML private TableColumn<Paper,String>  colStatus;
     @FXML private TableColumn<Paper,String>  colCreatedAt;
 
     private final PaperService paperService = new PaperService();
@@ -53,6 +55,10 @@ public class PaperController {
     private void setupColumns() {
         colId.setCellValueFactory(c ->
             new SimpleIntegerProperty(c.getValue().getId()).asObject());
+        if (colFavorite != null) {
+            colFavorite.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().isFavorite() ? "★" : "☆"));
+        }
         colTitle.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getTitle()));
         colAuthors.setCellValueFactory(c ->
@@ -61,6 +67,10 @@ public class PaperController {
             new SimpleIntegerProperty(c.getValue().getYear()).asObject());
         colCategory.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getCategory()));
+        if (colStatus != null) {
+            colStatus.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getReadingStatus()));
+        }
         colCreatedAt.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getCreatedAt()));
     }
@@ -133,6 +143,23 @@ public class PaperController {
             } else {
                 showAlert("Delete failed.", Alert.AlertType.ERROR);
             }
+        }
+    }
+
+    @FXML
+    private void onToggleFavorite() {
+        Paper p = getSelected();
+        if (p == null) {
+            showAlert("Select a paper to toggle favorite.", Alert.AlertType.WARNING);
+            return;
+        }
+        boolean newFav = !p.isFavorite();
+        boolean ok = paperService.setFavorite(p.getId(), newFav);
+        if (ok) {
+            p.setFavorite(newFav);
+            papersTable.refresh();
+        } else {
+            showAlert("Failed to update favorite status.", Alert.AlertType.ERROR);
         }
     }
 

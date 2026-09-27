@@ -88,14 +88,82 @@ public class ProjectTest {
 
     @Test
     public void testFxmlFilesExistInClasspath() {
+        // Core screens
         String[] fxmls = {
             "main.fxml", "dashboard.fxml", "papers.fxml",
-            "add-paper.fxml", "analysis.fxml", "paper-details.fxml", "search.fxml"
+            "add-paper.fxml", "analysis.fxml", "paper-details.fxml", "search.fxml",
+            // Extended screens added in Step 2
+            "favorites.fxml", "comparison.fxml", "reports.fxml"
         };
 
         for (String fxml : fxmls) {
             URL url = getClass().getResource("/com/example/research_project/fxml/" + fxml);
             assertNotNull(url, "Resource should exist: /com/example/research_project/fxml/" + fxml);
+        }
+    }
+
+    @Test
+    public void testPaperFavoriteAndReadingStatus() {
+        // Default values
+        Paper paper = new Paper();
+        assertFalse(paper.isFavorite(), "Default favorite should be false");
+        assertEquals("UNREAD", paper.getReadingStatus(), "Default reading status should be UNREAD");
+
+        // Setting favorite
+        paper.setFavorite(true);
+        assertTrue(paper.isFavorite());
+
+        // Setting reading status
+        paper.setReadingStatus("READING");
+        assertEquals("READING", paper.getReadingStatus());
+
+        paper.setReadingStatus("COMPLETED");
+        assertEquals("COMPLETED", paper.getReadingStatus());
+
+        // Null/blank reading status should default to UNREAD
+        paper.setReadingStatus(null);
+        assertEquals("UNREAD", paper.getReadingStatus());
+
+        paper.setReadingStatus("  ");
+        assertEquals("UNREAD", paper.getReadingStatus());
+    }
+
+    @Test
+    public void testPaperServiceFavoriteAndStatus() {
+        PaperService service = new PaperService();
+
+        Paper paper = new Paper();
+        paper.setTitle("Favorite Test Paper " + System.currentTimeMillis());
+        paper.setAuthors("Test Author");
+        paper.setYear(2025);
+
+        int id = service.addPaper(paper);
+        assertTrue(id > 0, "Paper ID should be > 0");
+
+        try {
+            // Test toggling favorite
+            boolean ok = service.setFavorite(id, true);
+            assertTrue(ok, "setFavorite should succeed");
+
+            Paper fetched = service.getPaperById(id);
+            assertNotNull(fetched);
+            assertTrue(fetched.isFavorite(), "Paper should be marked as favorite");
+
+            // Test reading status update
+            boolean statusOk = service.updateReadingStatus(id, "READING");
+            assertTrue(statusOk, "updateReadingStatus should succeed");
+
+            Paper fetched2 = service.getPaperById(id);
+            assertNotNull(fetched2);
+            assertEquals("READING", fetched2.getReadingStatus());
+
+            // Favorites list should include this paper
+            java.util.List<Paper> favorites = service.getFavoritePapers();
+            assertTrue(favorites.stream().anyMatch(p -> p.getId() == id),
+                       "Favorite papers list should contain paper id=" + id);
+        } finally {
+            // Always clean up
+            service.deletePaper(id);
         }
     }
 }

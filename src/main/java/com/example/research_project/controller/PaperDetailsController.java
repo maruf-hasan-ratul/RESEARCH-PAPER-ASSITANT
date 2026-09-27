@@ -2,6 +2,7 @@ package com.example.research_project.controller;
 
 import com.example.research_project.model.Note;
 import com.example.research_project.model.Paper;
+import com.example.research_project.service.CitationService;
 import com.example.research_project.service.PaperService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -9,6 +10,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
@@ -19,9 +22,11 @@ import java.util.List;
  * PaperDetailsController.java
  *
  * Displays all information about one paper:
- *   title, authors, year, category, source,
- *   abstract, methodology, findings, keywords, notes
- * Also allows adding/deleting notes.
+ *   - title, authors, year, category, source
+ *   - abstract, methodology, findings, keywords, notes
+ *   - favorite toggle button (☆ / ★)
+ *   - reading status dropdown (UNREAD, READING, COMPLETED)
+ *   - academic citation generator (IEEE, APA, MLA, BibTeX)
  */
 public class PaperDetailsController {
 
@@ -35,14 +40,35 @@ public class PaperDetailsController {
     @FXML private Label lblMethodology;
     @FXML private Label lblFindings;
     @FXML private Label lblKeywords;
+
+    // Favorite & Reading Status controls
+    @FXML private Button btnFavorite;
+    @FXML private ComboBox<String> comboReadingStatus;
+
+    // Citation controls
+    @FXML private ComboBox<CitationService.CitationStyle> comboCitationStyle;
+    @FXML private TextArea txtCitation;
+    @FXML private Label lblCitationFeedback;
+
+    // Notes controls
     @FXML private ListView<String> notesList;
     @FXML private TextField noteInput;
 
     private final PaperService paperService = new PaperService();
+    private final CitationService citationService = new CitationService();
     private Paper currentPaper = null;
 
     @FXML
     public void initialize() {
+        if (comboReadingStatus != null) {
+            comboReadingStatus.setItems(FXCollections.observableArrayList("UNREAD", "READING", "COMPLETED"));
+        }
+
+        if (comboCitationStyle != null) {
+            comboCitationStyle.setItems(FXCollections.observableArrayList(CitationService.CitationStyle.values()));
+            comboCitationStyle.setValue(CitationService.CitationStyle.IEEE);
+        }
+
         Platform.runLater(() -> {
             if (lblTitle.getScene() != null && lblTitle.getScene().getUserData() instanceof Paper p) {
                 setPaper(p);
@@ -51,14 +77,13 @@ public class PaperDetailsController {
     }
 
     /**
-     * JavaFX scene loading trick: after the FXML loads,
-     * controllers elsewhere call this method to pass the paper.
-     * We use scene.getUserData() to detect the paper.
+     * Sets the paper to be displayed in details.
      */
     public void setPaper(Paper paper) {
         this.currentPaper = paper;
         populateFields();
         loadNotes();
+        updateCitation();
     }
 
     private void populateFields() {
@@ -73,16 +98,100 @@ public class PaperDetailsController {
         lblMethodology.setText(nvl(currentPaper.getMethodology()));
         lblFindings.setText(nvl(currentPaper.getFindings()));
 
+        // Update Favorite UI
+        updateFavoriteButtonState();
+
+        // Update Reading Status
+        if (comboReadingStatus != null) {
+            comboReadingStatus.setValue(currentPaper.getReadingStatus());
+        }
+
         List<String> kws = paperService.getKeywordsForPaper(currentPaper.getId());
         lblKeywords.setText(kws.isEmpty() ? "(none)" : String.join(", ", kws));
     }
+
+    private void updateFavoriteButtonState() {
+        if (btnFavorite == null || currentPaper == null) return;
+        if (currentPaper.isFavorite()) {
+            btnFavorite.setText("★ In Favorites");
+            btnFavorite.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;");
+        } else {
+            btnFavorite.setText("☆ Add to Favorites");
+            btnFavorite.setStyle("-fx-background-color: #334155; -fx-text-fill: #F8FAFC; -fx-font-weight: 500;");
+        }
+    }
+
+    @FXML
+    private void onToggleFavorite() {
+        if (currentPaper == null) return;
+        boolean newFav = !currentPaper.isFavorite();
+        boolean ok = paperService.setFavorite(currentPaper.getId(), newFav);
+        if (ok) {
+            currentPaper.setFavorite(newFav);
+            updateFavoriteButtonState();
+        } else {
+            showAlert("Could not update favorite status.", Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void onStatusChanged() {
+        if (currentPaper == null || comboReadingStatus == null) return;
+        String newStatus = comboReadingStatus.getValue();
+        if (newStatus != null && !newStatus.equals(currentPaper.getReadingStatus())) {
+            boolean ok = paperService.updateReadingStatus(currentPaper.getId(), newStatus);
+            if (ok) {
+                currentPaper.setReadingStatus(newStatus);
+            } else {
+                showAlert("Could not update reading status.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    // ================================================================
+    // CITATIONS
+    // ================================================================
+
+    @FXML
+    private void onCitationStyleChanged() {
+        updateCitation();
+    }
+
+    private void updateCitation() {
+        if (currentPaper == null || txtCitation == null || comboCitationStyle == null) return;
+        CitationService.CitationStyle style = comboCitationStyle.getValue();
+        if (style == null) style = CitationService.CitationStyle.IEEE;
+        String citation = citationService.generateCitation(currentPaper, style);
+        txtCitation.setText(citation);
+        if (lblCitationFeedback != null) {
+            lblCitationFeedback.setText("");
+        }
+    }
+
+    @FXML
+    private void onCopyCitation() {
+        if (txtCitation == null || txtCitation.getText().isBlank()) return;
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        ClipboardContent content = new ClipboardContent();
+        content.putString(txtCitation.getText());
+        clipboard.setContent(content);
+
+        if (lblCitationFeedback != null) {
+            lblCitationFeedback.setText("✓ Citation copied to clipboard!");
+            lblCitationFeedback.setStyle("-fx-text-fill: #10B981; -fx-font-size: 11px; -fx-font-weight: bold;");
+        }
+    }
+
+    // ================================================================
+    // NOTES
+    // ================================================================
 
     private void loadNotes() {
         if (currentPaper == null) return;
         List<Note> notes = paperService.getNotesForPaper(currentPaper.getId());
         List<String> display = notes.stream()
-            .map(n -> "[" + nvl(n.getCreatedAt()) + "]  " + nvl(n.getNote()))
-            .toList();
+                .map(n -> "[" + nvl(n.getCreatedAt()) + "]  " + nvl(n.getNote()))
+                .toList();
         notesList.setItems(FXCollections.observableArrayList(display));
     }
 

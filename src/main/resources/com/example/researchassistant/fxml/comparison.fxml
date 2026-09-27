@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.research_project.controller.PaperComparisonController">
+
+    <VBox spacing="18.0">
+        <padding>
+            <Insets bottom="28.0" left="28.0" right="28.0" top="24.0" />
+        </padding>
+
+        <!-- Top Header -->
+        <VBox spacing="3.0">
+            <Label styleClass="page-header-title" text="⚖️ Paper Comparison" />
+            <Label styleClass="page-header-desc" text="Compare two research papers side-by-side using TF-IDF cosine similarity and semantic keyword extraction." />
+        </VBox>
+
+        <!-- Paper Selection Card -->
+        <VBox spacing="12.0" styleClass="card">
+            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="PAPER A" />
+                    <ComboBox fx:id="comboPaperA" maxWidth="1.7976931348623157E308" promptText="Select Paper A..." />
+                </VBox>
+
+                <Label style="-fx-font-size: 16px; -fx-text-fill: #64748B; -fx-padding: 16 0 0 0;" text="VS" />
+
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="PAPER B" />
+                    <ComboBox fx:id="comboPaperB" maxWidth="1.7976931348623157E308" promptText="Select Paper B..." />
+                </VBox>
+
+                <VBox alignment="BOTTOM_CENTER" spacing="4.0">
+                    <Button onAction="#onCompare" styleClass="btn-primary" text="⚖️ Compare Papers" />
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- Comparison Results Container -->
+        <VBox fx:id="resultsBox" managed="false" spacing="16.0" visible="false">
+
+            <!-- Similarity Score Metric Card -->
+            <VBox spacing="8.0" styleClass="card">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <VBox spacing="2.0">
+                        <Label styleClass="stat-label" text="TEXTUAL SIMILARITY SCORE" />
+                        <Label fx:id="lblSimilarityScore" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #6366F1;" text="0.00%" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <VBox alignment="CENTER_RIGHT" prefWidth="250.0" spacing="4.0">
+                        <Label style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;" text="TF-IDF Cosine Match" />
+                        <ProgressBar fx:id="progressSimilarity" maxWidth="1.7976931348623157E308" progress="0.0" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Keywords Comparison Card -->
+            <VBox spacing="12.0" styleClass="card">
+                <Label styleClass="card-title" text="Keyword Overlap &amp; Contrast" />
+
+                <GridPane hgap="16.0" vgap="8.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="140.0" prefWidth="160.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
+
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #10B981;" text="Common Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label fx:id="lblCommonKeywords" style="-fx-text-fill: #A7F3D0; -fx-font-weight: bold;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="Paper A Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Label fx:id="lblKeywordsA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="Paper B Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <Label fx:id="lblKeywordsB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                </GridPane>
+            </VBox>
+
+            <!-- Side-by-Side Detailed Breakdown -->
+            <HBox spacing="16.0">
+                <!-- Paper A Column -->
+                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #818CF8;" text="Paper A" />
+                    <Separator opacity="0.2" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="TITLE" />
+                    <Label fx:id="lblTitleA" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="-" wrapText="true" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="AUTHORS" />
+                    <Label fx:id="lblAuthorsA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+
+                    <HBox spacing="20.0">
+                        <VBox spacing="2.0">
+                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="YEAR" />
+                            <Label fx:id="lblYearA" style="-fx-text-fill: #E2E8F0;" text="-" />
+                        </VBox>
+                        <VBox spacing="2.0">
+                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="CATEGORY" />
+                            <Label fx:id="lblCategoryA" styleClass="badge-pill" text="-" />
+                        </VBox>
+                    </HBox>
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SOURCE / VENUE" />
+                    <Label fx:id="lblSourceA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SUMMARY / ABSTRACT" />
+                    <Label fx:id="lblSummaryA" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 2px;" text="-" wrapText="true" />
+                </VBox>
+
+                <!-- Paper B Column -->
+                <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #A78BFA;" text="Paper B" />
+                    <Separator opacity="0.2" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="TITLE" />
+                    <Label fx:id="lblTitleB" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="-" wrapText="true" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="AUTHORS" />
+                    <Label fx:id="lblAuthorsB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+
+                    <HBox spacing="20.0">
+                        <VBox spacing="2.0">
+                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="YEAR" />
+                            <Label fx:id="lblYearB" style="-fx-text-fill: #E2E8F0;" text="-" />
+                        </VBox>
+                        <VBox spacing="2.0">
+                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="CATEGORY" />
+                            <Label fx:id="lblCategoryB" styleClass="badge-pill" text="-" />
+                        </VBox>
+                    </HBox>
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SOURCE / VENUE" />
+                    <Label fx:id="lblSourceB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+
+                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SUMMARY / ABSTRACT" />
+                    <Label fx:id="lblSummaryB" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 2px;" text="-" wrapText="true" />
+                </VBox>
+            </HBox>
+
+        </VBox>
+    </VBox>
+</ScrollPane>

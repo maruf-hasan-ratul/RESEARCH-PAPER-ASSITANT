@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PaperService.java - Business logic layer for papers.
@@ -194,6 +195,30 @@ public class PaperService {
         return paperDAO.filterPapers(category, year);
     }
 
+    public List<Paper> searchAdvanced(String query, String category, int year, String readingStatus, Boolean favoriteOnly) {
+        return paperDAO.searchAdvanced(query, category, year, readingStatus, favoriteOnly);
+    }
+
+    // ================================================================
+    // FAVORITES & READING STATUS
+    // ================================================================
+
+    public boolean setFavorite(int paperId, boolean favorite) {
+        return paperDAO.setFavorite(paperId, favorite);
+    }
+
+    public boolean updateReadingStatus(int paperId, String readingStatus) {
+        return paperDAO.updateReadingStatus(paperId, readingStatus);
+    }
+
+    public List<Paper> getFavoritePapers() {
+        return paperDAO.getFavoritePapers();
+    }
+
+    public List<Paper> getPapersByStatus(String status) {
+        return paperDAO.findByStatus(status);
+    }
+
     // ================================================================
     // STATISTICS (used by DashboardController)
     // ================================================================
@@ -208,6 +233,34 @@ public class PaperService {
 
     public int getAnalysedPaperCount() {
         return paperDAO.countAnalysedPapers();
+    }
+
+    public int getFavoritePaperCount() {
+        return paperDAO.countFavoritePapers();
+    }
+
+    public int getUnreadPaperCount() {
+        return paperDAO.countUnreadPapers();
+    }
+
+    public int getReadingPaperCount() {
+        return paperDAO.countReadingPapers();
+    }
+
+    public int getCompletedPaperCount() {
+        return paperDAO.countCompletedPapers();
+    }
+
+    public int getTotalNoteCount() {
+        return noteDAO.countNotes();
+    }
+
+    public Map<String, Integer> getCategoryStatistics() {
+        return paperDAO.getCategoryStatistics();
+    }
+
+    public Map<String, Integer> getTopKeywords(int limit) {
+        return paperDAO.getTopKeywords(limit);
     }
 
     // ================================================================

@@ -145,28 +145,56 @@ public class AddPaperController {
     @FXML
     private void onImportFile() {
         FileChooser fc = new FileChooser();
-        fc.setTitle("Import Paper from Text File");
-        fc.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Text Files", "*.txt")
+        fc.setTitle("Import Paper from Text or PDF File");
+        fc.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("Supported Files (*.txt, *.pdf)", "*.txt", "*.pdf"),
+            new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+            new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
         );
 
         File file = fc.showOpenDialog(titleField.getScene().getWindow());
         if (file == null) return; // user cancelled
 
-        // Parse sections from the file
-        Paper parsed = FileUtil.parseFromFile(file.getAbsolutePath());
-        if (parsed == null) {
-            showAlert("Could not parse file. Make sure it follows the expected format.", Alert.AlertType.WARNING);
-            return;
-        }
+        String fileName = file.getName().toLowerCase();
 
-        // Pre-fill the form
-        if (parsed.getTitle()       != null) titleField.setText(parsed.getTitle());
-        if (parsed.getAuthors()     != null) authorsField.setText(parsed.getAuthors());
-        if (parsed.getYear()        > 0)     yearField.setText(String.valueOf(parsed.getYear()));
-        if (parsed.getAbstractText()!= null) abstractArea.setText(parsed.getAbstractText());
-        if (parsed.getMethodology() != null) methodologyArea.setText(parsed.getMethodology());
-        if (parsed.getFindings()    != null) findingsArea.setText(parsed.getFindings());
+        if (fileName.endsWith(".pdf")) {
+            // Import from PDF using PaperService (extracts text, metadata, keywords)
+            try {
+                Paper imported = paperService.importPaperFromPdf(file);
+                // Pre-fill the form from the imported paper (already saved to DB)
+                if (imported.getTitle()        != null) titleField.setText(imported.getTitle());
+                if (imported.getAuthors()      != null) authorsField.setText(imported.getAuthors());
+                if (imported.getYear()         > 0)     yearField.setText(String.valueOf(imported.getYear()));
+                if (imported.getCategory()     != null) categoryCombo.setValue(imported.getCategory());
+                if (imported.getSource()       != null) sourceField.setText(imported.getSource());
+                if (imported.getAbstractText() != null) abstractArea.setText(imported.getAbstractText());
+                if (imported.getMethodology()  != null) methodologyArea.setText(imported.getMethodology());
+                if (imported.getFindings()     != null) findingsArea.setText(imported.getFindings());
+
+                // Mark as an edit so we update, not insert a duplicate
+                editingPaper = imported;
+                pageTitle.setText("Edit Paper (Imported from PDF)");
+                showAlert("PDF imported and saved! (ID: " + imported.getId() + ")\n" +
+                          "Review the fields and click Save to confirm.", Alert.AlertType.INFORMATION);
+            } catch (IOException e) {
+                showAlert("Could not read PDF file: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        } else {
+            // Import from plain-text file
+            Paper parsed = FileUtil.parseFromFile(file.getAbsolutePath());
+            if (parsed == null) {
+                showAlert("Could not parse file. Make sure it follows the expected format.", Alert.AlertType.WARNING);
+                return;
+            }
+
+            // Pre-fill the form
+            if (parsed.getTitle()        != null) titleField.setText(parsed.getTitle());
+            if (parsed.getAuthors()      != null) authorsField.setText(parsed.getAuthors());
+            if (parsed.getYear()         > 0)     yearField.setText(String.valueOf(parsed.getYear()));
+            if (parsed.getAbstractText() != null) abstractArea.setText(parsed.getAbstractText());
+            if (parsed.getMethodology()  != null) methodologyArea.setText(parsed.getMethodology());
+            if (parsed.getFindings()     != null) findingsArea.setText(parsed.getFindings());
+        }
     }
 
     @FXML

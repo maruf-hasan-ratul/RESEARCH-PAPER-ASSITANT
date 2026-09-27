@@ -35,6 +35,9 @@ public class MainController {
     @FXML private Button btnAddPaper;
     @FXML private Button btnAnalysis;
     @FXML private Button btnSearch;
+    @FXML private Button btnFavorites;
+    @FXML private Button btnCompare;
+    @FXML private Button btnReports;
 
     /**
      * initialize() is called automatically by JavaFX after the FXML is loaded.
@@ -79,6 +82,24 @@ public class MainController {
         setActive(btnSearch);
     }
 
+    @FXML
+    public void showFavorites() {
+        loadView("favorites.fxml");
+        setActive(btnFavorites);
+    }
+
+    @FXML
+    public void showComparison() {
+        loadView("comparison.fxml");
+        setActive(btnCompare);
+    }
+
+    @FXML
+    public void showReports() {
+        loadView("reports.fxml");
+        setActive(btnReports);
+    }
+
     // ================================================================
     // PRIVATE HELPERS
     // ================================================================
@@ -111,7 +132,8 @@ public class MainController {
      * Applies vibrant active style to the selected button and neutral style to others.
      */
     private void setActive(Button selected) {
-        Button[] allButtons = {btnDashboard, btnPapers, btnAddPaper, btnAnalysis, btnSearch};
+        Button[] allButtons = {btnDashboard, btnPapers, btnAddPaper, btnAnalysis, btnSearch,
+                               btnFavorites, btnCompare, btnReports};
         for (Button btn : allButtons) {
             if (btn == selected) {
                 btn.setStyle("-fx-background-color: #4F46E5; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-padding: 10 14; -fx-alignment: BASELINE_LEFT;");

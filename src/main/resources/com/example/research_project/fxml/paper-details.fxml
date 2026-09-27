@@ -2,10 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -29,10 +31,11 @@
             <Button onAction="#onBack" styleClass="btn-secondary" text="← Back to Papers" />
             <VBox spacing="2.0">
                 <Label fx:id="lblPageTitle" styleClass="page-header-title" text="Paper Details" />
-                <Label styleClass="page-header-desc" text="Full paper view, extracted metadata, and researcher notes." />
+                <Label styleClass="page-header-desc" text="Full paper view, reading status, citations, and researcher notes." />
             </VBox>
             <Region HBox.hgrow="ALWAYS" />
-            <HBox spacing="10.0">
+            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                <Button fx:id="btnFavorite" onAction="#onToggleFavorite" text="☆ Add to Favorites" />
                 <Button onAction="#onEdit" styleClass="btn-secondary" text="✏️ Edit Paper" />
                 <Button onAction="#onAnalyse" styleClass="btn-primary" text="⚡ Analyse" />
             </HBox>
@@ -40,8 +43,16 @@
 
         <!-- Paper Overview Card -->
         <VBox spacing="14.0" styleClass="card">
-            <Label fx:id="lblTitle" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"
-                   text="Paper Title" wrapText="true" />
+            <HBox alignment="CENTER_LEFT" spacing="12.0">
+                <Label fx:id="lblTitle" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"
+                       text="Paper Title" wrapText="true" HBox.hgrow="ALWAYS" />
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- Reading Status Selector -->
+                <HBox alignment="CENTER_RIGHT" spacing="6.0">
+                    <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold; -fx-font-size: 12px;" text="Status:" />
+                    <ComboBox fx:id="comboReadingStatus" onAction="#onStatusChanged" prefWidth="140.0" />
+                </HBox>
+            </HBox>
 
             <GridPane hgap="16.0" vgap="10.0">
                 <columnConstraints>
@@ -63,14 +74,32 @@
 
                 <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                 <Label fx:id="lblKeywords" style="-fx-text-fill: #A5B4FC; -fx-font-weight: 500;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <rowConstraints>
-               <RowConstraints />
-               <RowConstraints />
-               <RowConstraints />
-               <RowConstraints />
-               <RowConstraints />
-            </rowConstraints>
+                <rowConstraints>
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                    <RowConstraints />
+                </rowConstraints>
             </GridPane>
+        </VBox>
+
+        <!-- Citation Generator Card -->
+        <VBox spacing="12.0" styleClass="card">
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label styleClass="card-title" text="📑 Academic Citation Generator" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="Style:" />
+                <ComboBox fx:id="comboCitationStyle" onAction="#onCitationStyleChanged" prefWidth="160.0" />
+                <Button onAction="#onCopyCitation" styleClass="btn-primary" text="📋 Copy Citation" />
+            </HBox>
+
+            <TextArea fx:id="txtCitation" editable="false" prefRowCount="3" wrapText="true"
+                      promptText="Formatted citation will appear here..." />
+
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="lblCitationFeedback" style="-fx-text-fill: #10B981; -fx-font-size: 11px;" text="" />
+            </HBox>
         </VBox>
 
         <!-- Sections: Abstract, Methodology, Findings -->

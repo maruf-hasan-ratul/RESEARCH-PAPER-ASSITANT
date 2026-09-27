@@ -13,56 +13,49 @@
 
 <VBox spacing="16.0" stylesheets="@../css/style.css"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.research_project.controller.PaperController">
+      fx:controller="com.example.research_project.controller.FavoritesController">
     <padding>
         <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
     </padding>
 
-    <!-- Header & Top Action Bar -->
+    <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="12.0">
         <VBox spacing="3.0">
-            <Label styleClass="page-header-title" text="Papers Library" />
-            <Label styleClass="page-header-desc" text="Browse, inspect, edit, and analyze academic papers in your library." />
+            <Label styleClass="page-header-title" text="⭐ Favorite Papers" />
+            <Label styleClass="page-header-desc" text="Your curated collection of important research literature." />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
-        <Button onAction="#onAdd" styleClass="btn-primary" text="➕ Add Paper" />
     </HBox>
 
-    <!-- Search & Filter Bar Card -->
+    <!-- Search Bar Card -->
     <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="card">
         <TextField fx:id="searchField" onAction="#onQuickSearch" prefWidth="320.0"
-                   promptText="Quick search by title or author..." HBox.hgrow="NEVER" />
-        <Button onAction="#onQuickSearch" styleClass="btn-primary" text="Search" />
+                   promptText="Filter favorites by title, author, category..." HBox.hgrow="NEVER" />
+        <Button onAction="#onQuickSearch" styleClass="btn-primary" text="Filter" />
         <Button onAction="#onRefresh" styleClass="btn-secondary" text="🔄 Refresh" />
-
         <Region HBox.hgrow="ALWAYS" />
-
-        <!-- Status indicator -->
-        <Label fx:id="lblStatus" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Loading papers..." />
+        <Label fx:id="lblStatus" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Loading favorites..." />
     </HBox>
 
-    <!-- Action Toolbar & Papers Table Card -->
+    <!-- Table Card -->
     <VBox spacing="12.0" styleClass="card" VBox.vgrow="ALWAYS">
-        <!-- Action Toolbar for Selected Paper -->
+        <!-- Action Toolbar -->
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Button onAction="#onView" styleClass="btn-secondary" text="👁️ View Details" />
-            <Button onAction="#onEdit" styleClass="btn-secondary" text="✏️ Edit" />
-            <Button onAction="#onToggleFavorite" styleClass="btn-secondary" text="⭐ Favorite" />
             <Button onAction="#onAnalyse" styleClass="btn-primary" text="⚡ Analyse" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button onAction="#onDelete" styleClass="btn-danger" text="🗑️ Delete" />
+            <Button onAction="#onRemoveFavorite" styleClass="btn-danger" text="★ Remove from Favorites" />
         </HBox>
 
-        <!-- Table View -->
         <TableView fx:id="papersTable" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
                 <TableColumn fx:id="colFavorite" prefWidth="45.0" text="Fav" />
-                <TableColumn fx:id="colTitle" prefWidth="300.0" text="Title" />
-                <TableColumn fx:id="colAuthors" prefWidth="180.0" text="Authors" />
-                <TableColumn fx:id="colYear" prefWidth="65.0" text="Year" />
-                <TableColumn fx:id="colCategory" prefWidth="140.0" text="Category" />
-                <TableColumn fx:id="colStatus" prefWidth="100.0" text="Status" />
+                <TableColumn fx:id="colTitle" prefWidth="320.0" text="Title" />
+                <TableColumn fx:id="colAuthors" prefWidth="200.0" text="Authors" />
+                <TableColumn fx:id="colYear" prefWidth="70.0" text="Year" />
+                <TableColumn fx:id="colCategory" prefWidth="150.0" text="Category" />
+                <TableColumn fx:id="colStatus" prefWidth="110.0" text="Status" />
                 <TableColumn fx:id="colCreatedAt" prefWidth="130.0" text="Created At" />
             </columns>
             <columnResizePolicy>
@@ -71,7 +64,7 @@
         </TableView>
 
         <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;"
-               text="Tip: Double-click any row to view its full details, notes, and keywords." />
+               text="Tip: Double-click any paper to open details, change reading status, or copy citations." />
     </VBox>
 
 </VBox>

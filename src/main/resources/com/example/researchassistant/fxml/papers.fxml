@@ -47,6 +47,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Button onAction="#onView" styleClass="btn-secondary" text="👁️ View Details" />
             <Button onAction="#onEdit" styleClass="btn-secondary" text="✏️ Edit" />
+            <Button onAction="#onToggleFavorite" styleClass="btn-secondary" text="⭐ Favorite" />
             <Button onAction="#onAnalyse" styleClass="btn-primary" text="⚡ Analyse" />
             <Region HBox.hgrow="ALWAYS" />
             <Button onAction="#onDelete" styleClass="btn-danger" text="🗑️ Delete" />
@@ -55,12 +56,14 @@
         <!-- Table View -->
         <TableView fx:id="papersTable" VBox.vgrow="ALWAYS">
             <columns>
-                <TableColumn fx:id="colId" prefWidth="60.0" text="ID" />
-                <TableColumn fx:id="colTitle" prefWidth="340.0" text="Title" />
-                <TableColumn fx:id="colAuthors" prefWidth="220.0" text="Authors" />
-                <TableColumn fx:id="colYear" prefWidth="75.0" text="Year" />
-                <TableColumn fx:id="colCategory" prefWidth="160.0" text="Category" />
-                <TableColumn fx:id="colCreatedAt" prefWidth="140.0" text="Created At" />
+                <TableColumn fx:id="colId" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="colFavorite" prefWidth="45.0" text="Fav" />
+                <TableColumn fx:id="colTitle" prefWidth="300.0" text="Title" />
+                <TableColumn fx:id="colAuthors" prefWidth="180.0" text="Authors" />
+                <TableColumn fx:id="colYear" prefWidth="65.0" text="Year" />
+                <TableColumn fx:id="colCategory" prefWidth="140.0" text="Category" />
+                <TableColumn fx:id="colStatus" prefWidth="100.0" text="Status" />
+                <TableColumn fx:id="colCreatedAt" prefWidth="130.0" text="Created At" />
             </columns>
             <columnResizePolicy>
                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

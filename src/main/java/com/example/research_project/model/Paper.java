@@ -46,6 +46,8 @@ public class Paper {
     private String source;       // Where the paper came from (URL, journal, etc.)
     private String filePath;     // Path to imported file, if any
     private String createdAt;    // Timestamp when this record was created
+    private boolean favorite;    // Whether this paper is favorited (0 = no, 1 = yes)
+    private String readingStatus = "UNREAD"; // "UNREAD", "READING", or "COMPLETED"
 
     // --------------------------------------------------------
     // Constructors
@@ -59,8 +61,7 @@ public class Paper {
     }
 
     /**
-     * Full constructor - used when creating a Paper with all fields at once.
-     * The id is left out because SQLite generates it automatically.
+     * Constructor without favorite and readingStatus - for backwards compatibility.
      */
     public Paper(String title, String authors, int year, String abstractText,
                  String methodology, String findings, String category,
@@ -75,6 +76,20 @@ public class Paper {
         this.source = source;
         this.filePath = filePath;
         this.createdAt = createdAt;
+        this.favorite = false;
+        this.readingStatus = "UNREAD";
+    }
+
+    /**
+     * Full constructor - used when creating a Paper with all fields at once.
+     */
+    public Paper(String title, String authors, int year, String abstractText,
+                 String methodology, String findings, String category,
+                 String source, String filePath, String createdAt,
+                 boolean favorite, String readingStatus) {
+        this(title, authors, year, abstractText, methodology, findings, category, source, filePath, createdAt);
+        this.favorite = favorite;
+        this.readingStatus = (readingStatus == null || readingStatus.isBlank()) ? "UNREAD" : readingStatus;
     }
 
     // --------------------------------------------------------
@@ -113,6 +128,16 @@ public class Paper {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public boolean isFavorite() { return favorite; }
+    public void setFavorite(boolean favorite) { this.favorite = favorite; }
+
+    public String getReadingStatus() {
+        return (readingStatus == null || readingStatus.isBlank()) ? "UNREAD" : readingStatus;
+    }
+    public void setReadingStatus(String readingStatus) {
+        this.readingStatus = (readingStatus == null || readingStatus.isBlank()) ? "UNREAD" : readingStatus;
+    }
 
     // --------------------------------------------------------
     // toString() - useful for debugging (prints a short summary)

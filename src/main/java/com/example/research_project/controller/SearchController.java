@@ -12,32 +12,40 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * SearchController.java
  *
- * Controls the Search screen. Allows searching papers by:
- *   - Keyword (title or author)
+ * Controls the Advanced Paper Search & Filtering screen.
+ * Allows searching papers by:
+ *   - Query string (matches title, author, abstract, or keyword)
  *   - Category (dropdown)
  *   - Year (dropdown)
+ *   - Reading status (UNREAD, READING, COMPLETED)
+ *   - Favorite status (All, Favorites Only)
  *
- * Results are shown in a TableView.
+ * Results are displayed in an interactive TableView.
  */
 public class SearchController {
 
     @FXML private TextField        searchField;
     @FXML private ComboBox<String> categoryCombo;
     @FXML private ComboBox<String> yearCombo;
+    @FXML private ComboBox<String> statusCombo;
+    @FXML private ComboBox<String> favoriteCombo;
     @FXML private Label            lblResultCount;
 
     @FXML private TableView<Paper>           resultsTable;
     @FXML private TableColumn<Paper,Integer> colId;
+    @FXML private TableColumn<Paper,String>  colFavorite;
     @FXML private TableColumn<Paper,String>  colTitle;
     @FXML private TableColumn<Paper,String>  colAuthors;
     @FXML private TableColumn<Paper,Integer> colYear;
     @FXML private TableColumn<Paper,String>  colCategory;
+    @FXML private TableColumn<Paper,String>  colStatus;
 
     private final PaperService paperService = new PaperService();
 
@@ -46,11 +54,21 @@ public class SearchController {
         setupColumns();
         loadFilterOptions();
         onSearch(); // show all by default
+
+        resultsTable.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2 && resultsTable.getSelectionModel().getSelectedItem() != null) {
+                onView();
+            }
+        });
     }
 
     private void setupColumns() {
         colId.setCellValueFactory(c ->
             new SimpleIntegerProperty(c.getValue().getId()).asObject());
+        if (colFavorite != null) {
+            colFavorite.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().isFavorite() ? "★" : "☆"));
+        }
         colTitle.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getTitle()));
         colAuthors.setCellValueFactory(c ->
@@ -59,13 +77,17 @@ public class SearchController {
             new SimpleIntegerProperty(c.getValue().getYear()).asObject());
         colCategory.setCellValueFactory(c ->
             new SimpleStringProperty(c.getValue().getCategory()));
+        if (colStatus != null) {
+            colStatus.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getReadingStatus()));
+        }
     }
 
-    /** Populate category and year dropdowns from actual data */
+    /** Populate filter dropdowns from actual data */
     private void loadFilterOptions() {
         List<Paper> allPapers = paperService.getAllPapers();
 
-        // Unique categories
+        // 1. Categories
         List<String> categories = new ArrayList<>();
         categories.add("All");
         allPapers.stream()
@@ -77,7 +99,7 @@ public class SearchController {
         categoryCombo.setItems(FXCollections.observableArrayList(categories));
         categoryCombo.setValue("All");
 
-        // Unique years
+        // 2. Years
         List<String> years = new ArrayList<>();
         years.add("All");
         allPapers.stream()
@@ -89,13 +111,27 @@ public class SearchController {
             .forEach(years::add);
         yearCombo.setItems(FXCollections.observableArrayList(years));
         yearCombo.setValue("All");
+
+        // 3. Reading Status
+        if (statusCombo != null) {
+            statusCombo.setItems(FXCollections.observableArrayList("All", "UNREAD", "READING", "COMPLETED"));
+            statusCombo.setValue("All");
+        }
+
+        // 4. Favorite Status
+        if (favoriteCombo != null) {
+            favoriteCombo.setItems(FXCollections.observableArrayList("All Papers", "Favorites Only"));
+            favoriteCombo.setValue("All Papers");
+        }
     }
 
     @FXML
     private void onSearch() {
-        String keyword  = searchField.getText().trim();
-        String category = categoryCombo.getValue();
-        String yearStr  = yearCombo.getValue();
+        String query = (searchField != null) ? searchField.getText().trim() : "";
+        String category = (categoryCombo != null) ? categoryCombo.getValue() : "All";
+        String yearStr  = (yearCombo != null) ? yearCombo.getValue() : "All";
+        String status   = (statusCombo != null) ? statusCombo.getValue() : "All";
+        String favStr   = (favoriteCombo != null) ? favoriteCombo.getValue() : "All Papers";
 
         int year = 0;
         if (yearStr != null && !yearStr.equals("All")) {
@@ -103,40 +139,27 @@ public class SearchController {
             catch (NumberFormatException ignored) {}
         }
 
-        boolean hasCategory = category != null && !category.equals("All");
-        boolean hasYear     = year > 0;
-        boolean hasKeyword  = !keyword.isEmpty();
+        boolean favoriteOnly = "Favorites Only".equalsIgnoreCase(favStr);
 
-        List<Paper> results;
-
-        if (!hasKeyword && !hasCategory && !hasYear) {
-            results = paperService.getAllPapers();
-        } else if (hasKeyword && !hasCategory && !hasYear) {
-            results = paperService.searchPapers(keyword);
-        } else if (!hasKeyword && (hasCategory || hasYear)) {
-            results = paperService.filterPapers(hasCategory ? category : null, year);
-        } else {
-            // Keyword + filter: search then filter in memory
-            results = paperService.searchPapers(keyword);
-            if (hasCategory) {
-                final String cat = category;
-                results = results.stream().filter(p -> cat.equals(p.getCategory())).toList();
-            }
-            if (hasYear) {
-                final int yr = year;
-                results = results.stream().filter(p -> p.getYear() == yr).toList();
-            }
-        }
+        List<Paper> results = paperService.searchAdvanced(
+                query.isEmpty() ? null : query,
+                category,
+                year,
+                status,
+                favoriteOnly ? Boolean.TRUE : null
+        );
 
         resultsTable.setItems(FXCollections.observableArrayList(results));
-        lblResultCount.setText(results.size() + " result(s) found.");
+        lblResultCount.setText(results.size() + " matching paper(s) found.");
     }
 
     @FXML
     private void onReset() {
-        searchField.clear();
-        categoryCombo.setValue("All");
-        yearCombo.setValue("All");
+        if (searchField != null) searchField.clear();
+        if (categoryCombo != null) categoryCombo.setValue("All");
+        if (yearCombo != null) yearCombo.setValue("All");
+        if (statusCombo != null) statusCombo.setValue("All");
+        if (favoriteCombo != null) favoriteCombo.setValue("All Papers");
         onSearch();
     }
 
@@ -164,7 +187,7 @@ public class SearchController {
 
     private void navigateTo(String fxml) {
         try {
-            java.net.URL loc = getClass().getResource("/com/example/research_project/fxml/" + fxml);
+            URL loc = getClass().getResource("/com/example/research_project/fxml/" + fxml);
             if (loc == null) {
                 loc = getClass().getResource("/com/example/researchassistant/fxml/" + fxml);
             }

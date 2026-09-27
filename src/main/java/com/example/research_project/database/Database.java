@@ -3,6 +3,7 @@ package com.example.research_project.database;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -97,17 +98,19 @@ public class Database {
     // ----------------------------------------------------------------
     private static final String CREATE_PAPERS_TABLE =
             "CREATE TABLE IF NOT EXISTS papers (" +
-                    "    id          INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "    title       TEXT    NOT NULL," +
-                    "    authors     TEXT," +
-                    "    year        INTEGER," +
-                    "    abstract    TEXT," +
-                    "    methodology TEXT," +
-                    "    findings    TEXT," +
-                    "    category    TEXT," +
-                    "    source      TEXT," +
-                    "    file_path   TEXT," +
-                    "    created_at  TEXT" +
+                    "    id             INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "    title          TEXT    NOT NULL," +
+                    "    authors        TEXT," +
+                    "    year           INTEGER," +
+                    "    abstract       TEXT," +
+                    "    methodology    TEXT," +
+                    "    findings       TEXT," +
+                    "    category       TEXT," +
+                    "    source         TEXT," +
+                    "    file_path      TEXT," +
+                    "    created_at     TEXT," +
+                    "    favorite       INTEGER DEFAULT 0," +
+                    "    reading_status TEXT    DEFAULT 'UNREAD'" +
                     ")";
 
     private static final String CREATE_KEYWORDS_TABLE =
@@ -194,6 +197,9 @@ public class Database {
             stmt.execute(CREATE_KEYWORDS_TABLE);
             stmt.execute(CREATE_NOTES_TABLE);
 
+            // Safely migrate existing databases if new columns are missing
+            migrateSchema(conn);
+
             System.out.println("Database: initialised successfully.");
             System.out.println("Database: file -> database/research_assistant.db");
 
@@ -207,6 +213,45 @@ public class Database {
             System.err.println("Reason: " + e.getMessage());
             System.err.println("====================================================");
             // In Step 7 we will also show a JavaFX alert dialog here
+        }
+    }
+
+    /**
+     * Safely migrates existing database schemas without deleting data.
+     * Adds 'favorite' and 'reading_status' columns if they do not exist.
+     */
+    private static void migrateSchema(Connection conn) {
+        try (Statement stmt = conn.createStatement()) {
+            boolean hasFavorite = false;
+            boolean hasReadingStatus = false;
+
+            try (ResultSet rs = stmt.executeQuery("PRAGMA table_info(papers)")) {
+                while (rs.next()) {
+                    String colName = rs.getString("name");
+                    if ("favorite".equalsIgnoreCase(colName)) {
+                        hasFavorite = true;
+                    } else if ("reading_status".equalsIgnoreCase(colName)) {
+                        hasReadingStatus = true;
+                    }
+                }
+            }
+
+            if (!hasFavorite) {
+                stmt.execute("ALTER TABLE papers ADD COLUMN favorite INTEGER DEFAULT 0");
+                System.out.println("Database Migration: added 'favorite' column to papers table.");
+            }
+
+            if (!hasReadingStatus) {
+                stmt.execute("ALTER TABLE papers ADD COLUMN reading_status TEXT DEFAULT 'UNREAD'");
+                System.out.println("Database Migration: added 'reading_status' column to papers table.");
+            }
+
+            // Ensure any existing nulls are set to default values
+            stmt.execute("UPDATE papers SET favorite = 0 WHERE favorite IS NULL");
+            stmt.execute("UPDATE papers SET reading_status = 'UNREAD' WHERE reading_status IS NULL OR reading_status = ''");
+
+        } catch (SQLException e) {
+            System.err.println("Database Migration warning: " + e.getMessage());
         }
     }
 

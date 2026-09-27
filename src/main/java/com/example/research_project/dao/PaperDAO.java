@@ -5,7 +5,9 @@ import com.example.research_project.model.Paper;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PaperDAO.java - All database operations for the 'papers' table.
@@ -51,8 +53,8 @@ public class PaperDAO {
     public int addPaper(Paper paper) {
         String sql = "INSERT INTO papers " +
                 "(title, authors, year, abstract, methodology, findings, " +
-                " category, source, file_path, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                " category, source, file_path, created_at, favorite, reading_status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // GENERATED_KEYS tells JDBC to return the auto-generated id after INSERT
         try (Connection conn = Database.getConnection();
@@ -68,6 +70,8 @@ public class PaperDAO {
             ps.setString(8, paper.getSource());
             ps.setString(9, paper.getFilePath());
             ps.setString(10, paper.getCreatedAt());
+            ps.setInt   (11, paper.isFavorite() ? 1 : 0);
+            ps.setString(12, paper.getReadingStatus());
 
             ps.executeUpdate(); // run the INSERT
 
@@ -162,7 +166,7 @@ public class PaperDAO {
     public boolean updatePaper(Paper paper) {
         String sql = "UPDATE papers SET " +
                 "title=?, authors=?, year=?, abstract=?, methodology=?, " +
-                "findings=?, category=?, source=?, file_path=? " +
+                "findings=?, category=?, source=?, file_path=?, favorite=?, reading_status=? " +
                 "WHERE id=?";
 
         try (Connection conn = Database.getConnection();
@@ -177,7 +181,9 @@ public class PaperDAO {
             ps.setString(7, paper.getCategory());
             ps.setString(8, paper.getSource());
             ps.setString(9, paper.getFilePath());
-            ps.setInt   (10, paper.getId());
+            ps.setInt   (10, paper.isFavorite() ? 1 : 0);
+            ps.setString(11, paper.getReadingStatus());
+            ps.setInt   (12, paper.getId());
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0; // true if at least one row was updated
@@ -420,21 +426,239 @@ public class PaperDAO {
     }
 
     // ================================================================
+    // FAVORITES & READING STATUS
+    // ================================================================
+
+    /**
+     * Toggles or sets the favorite flag for a paper.
+     */
+    public boolean setFavorite(int paperId, boolean favorite) {
+        String sql = "UPDATE papers SET favorite = ? WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, favorite ? 1 : 0);
+            ps.setInt(2, paperId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.setFavorite() error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Updates the reading status of a paper ("UNREAD", "READING", or "COMPLETED").
+     */
+    public boolean updateReadingStatus(int paperId, String readingStatus) {
+        String sql = "UPDATE papers SET reading_status = ? WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, (readingStatus == null || readingStatus.isBlank()) ? "UNREAD" : readingStatus);
+            ps.setInt(2, paperId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.updateReadingStatus() error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Returns all papers marked as favorites.
+     */
+    public List<Paper> getFavoritePapers() {
+        String sql = "SELECT * FROM papers WHERE favorite = 1 ORDER BY id DESC";
+        List<Paper> list = new ArrayList<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.getFavoritePapers() error: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * Returns all papers with a specific reading status.
+     */
+    public List<Paper> findByStatus(String status) {
+        String sql = "SELECT * FROM papers WHERE reading_status = ? ORDER BY id DESC";
+        List<Paper> list = new ArrayList<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.findByStatus() error: " + e.getMessage());
+        }
+        return list;
+    }
+
+    // ================================================================
+    // ADVANCED SEARCH
+    // ================================================================
+
+    /**
+     * Advanced search across title, author, keyword, category, year, reading status, and favorite status.
+     * All matching uses parameterized PreparedStatement to prevent SQL injection.
+     */
+    public List<Paper> searchAdvanced(String query, String category, int year, String readingStatus, Boolean favoriteOnly) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT DISTINCT p.* FROM papers p ");
+        sql.append("LEFT JOIN keywords k ON p.id = k.paper_id WHERE 1=1 ");
+
+        List<Object> params = new ArrayList<>();
+
+        if (query != null && !query.isBlank()) {
+            String pattern = "%" + query.trim() + "%";
+            sql.append("AND (p.title LIKE ? OR p.authors LIKE ? OR p.abstract LIKE ? OR k.keyword LIKE ?) ");
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        if (category != null && !category.isBlank() && !category.equalsIgnoreCase("All")) {
+            sql.append("AND p.category = ? ");
+            params.add(category.trim());
+        }
+
+        if (year > 0) {
+            sql.append("AND p.year = ? ");
+            params.add(year);
+        }
+
+        if (readingStatus != null && !readingStatus.isBlank() && !readingStatus.equalsIgnoreCase("All")) {
+            sql.append("AND p.reading_status = ? ");
+            params.add(readingStatus.trim());
+        }
+
+        if (favoriteOnly != null && favoriteOnly) {
+            sql.append("AND p.favorite = 1 ");
+        }
+
+        sql.append("ORDER BY p.id DESC");
+
+        List<Paper> list = new ArrayList<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                Object p = params.get(i);
+                if (p instanceof String s) {
+                    ps.setString(i + 1, s);
+                } else if (p instanceof Integer n) {
+                    ps.setInt(i + 1, n);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.searchAdvanced() error: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    // ================================================================
+    // EXTENDED DASHBOARD STATISTICS
+    // ================================================================
+
+    public int countFavoritePapers() {
+        String sql = "SELECT COUNT(*) FROM papers WHERE favorite = 1";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.countFavoritePapers() error: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public int countPapersByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM papers WHERE reading_status = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.countPapersByStatus() error: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public int countUnreadPapers() {
+        return countPapersByStatus("UNREAD");
+    }
+
+    public int countReadingPapers() {
+        return countPapersByStatus("READING");
+    }
+
+    public int countCompletedPapers() {
+        return countPapersByStatus("COMPLETED");
+    }
+
+    /**
+     * Returns paper counts grouped by category, ordered from highest to lowest.
+     */
+    public Map<String, Integer> getCategoryStatistics() {
+        String sql = "SELECT category, COUNT(*) as cnt FROM papers " +
+                     "WHERE category IS NOT NULL AND category != '' " +
+                     "GROUP BY category ORDER BY cnt DESC";
+        Map<String, Integer> stats = new LinkedHashMap<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                stats.put(rs.getString("category"), rs.getInt("cnt"));
+            }
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.getCategoryStatistics() error: " + e.getMessage());
+        }
+        return stats;
+    }
+
+    /**
+     * Returns the most common keywords and their occurrence counts.
+     */
+    public Map<String, Integer> getTopKeywords(int limit) {
+        String sql = "SELECT keyword, COUNT(*) as cnt FROM keywords " +
+                     "GROUP BY keyword ORDER BY cnt DESC LIMIT ?";
+        Map<String, Integer> top = new LinkedHashMap<>();
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    top.put(rs.getString("keyword"), rs.getInt("cnt"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("PaperDAO.getTopKeywords() error: " + e.getMessage());
+        }
+        return top;
+    }
+
+    // ================================================================
     // PRIVATE HELPER
     // ================================================================
 
     /**
      * Converts one ResultSet row into a Paper object.
-     *
-     * CALLED BY: getPaperById, getAllPapers, searchPapers, filterPapers
-     *
-     * WHY A SEPARATE METHOD?
-     * Without this, every method would repeat the same 10 lines of
-     * rs.getString("title"), rs.getInt("year"), etc.
-     * Putting it here means we only write it once (DRY principle).
-     *
-     * @param rs  A ResultSet positioned at a valid row
-     * @return    A fully populated Paper object
      */
     private Paper mapRow(ResultSet rs) throws SQLException {
         Paper paper = new Paper();
@@ -449,6 +673,20 @@ public class PaperDAO {
         paper.setSource      (rs.getString("source"));
         paper.setFilePath    (rs.getString("file_path"));
         paper.setCreatedAt   (rs.getString("created_at"));
+
+        try {
+            paper.setFavorite(rs.getInt("favorite") == 1);
+        } catch (SQLException ignored) {
+            paper.setFavorite(false);
+        }
+
+        try {
+            String status = rs.getString("reading_status");
+            paper.setReadingStatus(status != null ? status : "UNREAD");
+        } catch (SQLException ignored) {
+            paper.setReadingStatus("UNREAD");
+        }
+
         return paper;
     }
 }

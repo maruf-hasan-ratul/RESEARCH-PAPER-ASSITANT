@@ -94,4 +94,21 @@ public class NoteDAO {
             System.err.println("NoteDAO.deleteNote() error: " + e.getMessage());
         }
     }
+
+    /**
+     * Returns the total count of notes across all papers.
+     */
+    public int countNotes() {
+        String sql = "SELECT COUNT(*) FROM notes";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("NoteDAO.countNotes() error: " + e.getMessage());
+        }
+        return 0;
+    }
 }
