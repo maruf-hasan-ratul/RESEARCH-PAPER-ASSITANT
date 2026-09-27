@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.research_project.controller.PaperDetailsController">
+
+    <VBox spacing="18.0">
+        <padding>
+            <Insets bottom="28.0" left="28.0" right="28.0" top="24.0" />
+        </padding>
+
+        <!-- Top Header & Navigation -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <Button onAction="#onBack" styleClass="btn-secondary" text="← Back to Papers" />
+            <VBox spacing="2.0">
+                <Label fx:id="lblPageTitle" styleClass="page-header-title" text="Paper Details" />
+                <Label styleClass="page-header-desc" text="Full paper view, extracted metadata, and researcher notes." />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox spacing="10.0">
+                <Button onAction="#onEdit" styleClass="btn-secondary" text="✏️ Edit Paper" />
+                <Button onAction="#onAnalyse" styleClass="btn-primary" text="⚡ Analyse" />
+            </HBox>
+        </HBox>
+
+        <!-- Paper Overview Card -->
+        <VBox spacing="14.0" styleClass="card">
+            <Label fx:id="lblTitle" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"
+                   text="Paper Title" wrapText="true" />
+
+            <GridPane hgap="16.0" vgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="100.0" prefWidth="120.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Authors:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label fx:id="lblAuthors" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Year:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label fx:id="lblYear" style="-fx-text-fill: #E2E8F0;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Category:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label fx:id="lblCategory" styleClass="badge-pill" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Source / Venue:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label fx:id="lblSource" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <Label fx:id="lblKeywords" style="-fx-text-fill: #A5B4FC; -fx-font-weight: 500;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+        </VBox>
+
+        <!-- Sections: Abstract, Methodology, Findings -->
+        <VBox spacing="14.0" styleClass="card">
+            <Label styleClass="card-title" text="Abstract" />
+            <Label fx:id="lblAbstract" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+
+            <Separator opacity="0.15" />
+
+            <Label styleClass="card-title" text="Methodology" />
+            <Label fx:id="lblMethodology" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+
+            <Separator opacity="0.15" />
+
+            <Label styleClass="card-title" text="Findings &amp; Key Results" />
+            <Label fx:id="lblFindings" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+        </VBox>
+
+        <!-- Researcher Notes Card -->
+        <VBox spacing="12.0" styleClass="card">
+            <HBox alignment="CENTER_LEFT">
+                <Label styleClass="card-title" text="Researcher Notes" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button onAction="#onDeleteNote" styleClass="btn-danger" text="🗑️ Delete Selected Note" />
+            </HBox>
+
+            <ListView fx:id="notesList" prefHeight="140.0" />
+
+            <!-- Add Note Input Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <TextField fx:id="noteInput" onAction="#onAddNote" promptText="Type a new researcher note and press Enter..." HBox.hgrow="ALWAYS" />
+                <Button onAction="#onAddNote" styleClass="btn-primary" text="Add Note" />
+            </HBox>
+        </VBox>
+
+    </VBox>
+</ScrollPane>

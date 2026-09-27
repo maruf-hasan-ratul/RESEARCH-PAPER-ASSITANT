@@ -2,11 +2,8 @@ package com.example.research_project.service;
 
 import com.example.research_project.model.AnalysisResult;
 import com.example.research_project.model.Paper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +20,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * AIService.java - Local LLM integration via Ollama (Qwen 2.5 3B).
+ * AIService.java - Local LLM integration via Ollama (Qwen 2.5 3B) using org.json.
  *
  * FEATURES:
  * - Direct HTTP integration with local Ollama API (http://localhost:11434).
@@ -42,7 +39,6 @@ public class AIService {
     private static final String CONFIG_FILE = "config.properties";
 
     private final HttpClient httpClient;
-    private final Gson gson;
     private String host;
     private String model;
 
@@ -50,7 +46,6 @@ public class AIService {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
-        this.gson = new Gson();
         loadConfiguration();
     }
 
@@ -166,14 +161,15 @@ public class AIService {
             }
 
             // Check if model is listed in /api/tags
-            JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+            JSONObject json = new JSONObject(response.body());
             if (json.has("models")) {
-                JsonArray models = json.getAsJsonArray("models");
+                JSONArray models = json.getJSONArray("models");
                 boolean foundConfigured = false;
                 List<String> available = new ArrayList<>();
-                for (JsonElement el : models) {
-                    if (el.isJsonObject() && el.getAsJsonObject().has("name")) {
-                        String name = el.getAsJsonObject().get("name").getAsString();
+                for (int i = 0; i < models.length(); i++) {
+                    JSONObject el = models.optJSONObject(i);
+                    if (el != null && el.has("name")) {
+                        String name = el.getString("name");
                         available.add(name);
                         if (name.equalsIgnoreCase(model) || name.startsWith(model + ":") || model.startsWith(name)) {
                             foundConfigured = true;
@@ -207,18 +203,18 @@ public class AIService {
         long start = System.currentTimeMillis();
         String prompt = buildPaperAnalysisPrompt(paper);
 
-        JsonObject body = new JsonObject();
-        body.addProperty("model", this.model);
-        body.addProperty("prompt", prompt);
-        body.addProperty("stream", false);
-        body.addProperty("format", "json");
+        JSONObject body = new JSONObject();
+        body.put("model", this.model);
+        body.put("prompt", prompt);
+        body.put("stream", false);
+        body.put("format", "json");
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(host + "/api/generate"))
                     .header("Content-Type", "application/json")
                     .timeout(Duration.ofSeconds(60))
-                    .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(body), StandardCharsets.UTF_8))
+                    .POST(HttpRequest.BodyPublishers.ofString(body.toString(), StandardCharsets.UTF_8))
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -228,13 +224,13 @@ public class AIService {
                 return null;
             }
 
-            JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+            JSONObject responseJson = new JSONObject(response.body());
             if (!responseJson.has("response")) {
                 System.err.println("AIService: No 'response' field in Ollama output.");
                 return null;
             }
 
-            String content = responseJson.get("response").getAsString();
+            String content = responseJson.getString("response");
             AnalysisResult result = parseJsonResult(content, paper.getId());
             long elapsed = System.currentTimeMillis() - start;
             result.setProcessingTimeMs(elapsed);
@@ -299,27 +295,24 @@ public class AIService {
         }
         clean = clean.trim();
 
-        JsonObject obj = JsonParser.parseString(clean).getAsJsonObject();
+        JSONObject obj = new JSONObject(clean);
 
-        String summary = obj.has("summary") && !obj.get("summary").isJsonNull()
-                ? obj.get("summary").getAsString() : "";
+        String summary = obj.optString("summary", "");
 
         List<String> keywords = new ArrayList<>();
-        if (obj.has("keywords") && obj.get("keywords").isJsonArray()) {
-            JsonArray arr = obj.getAsJsonArray("keywords");
-            for (JsonElement el : arr) {
-                if (!el.isJsonNull()) keywords.add(el.getAsString());
+        if (obj.has("keywords")) {
+            JSONArray arr = obj.optJSONArray("keywords");
+            if (arr != null) {
+                for (int i = 0; i < arr.length(); i++) {
+                    String kw = arr.optString(i, "");
+                    if (!kw.isBlank()) keywords.add(kw);
+                }
             }
         }
 
-        String category = obj.has("category") && !obj.get("category").isJsonNull()
-                ? obj.get("category").getAsString() : "General";
-
-        String methodology = obj.has("methodology") && !obj.get("methodology").isJsonNull()
-                ? obj.get("methodology").getAsString() : "";
-
-        String findings = obj.has("findings") && !obj.get("findings").isJsonNull()
-                ? obj.get("findings").getAsString() : "";
+        String category = obj.optString("category", "General");
+        String methodology = obj.optString("methodology", "");
+        String findings = obj.optString("findings", "");
 
         return new AnalysisResult(paperId, summary, keywords, category, methodology, findings);
     }

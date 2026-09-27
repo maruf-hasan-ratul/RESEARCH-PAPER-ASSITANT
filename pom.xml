@@ -47,11 +47,18 @@
             <version>3.47.1.0</version>
         </dependency>
 
-        <!-- Gson: converts Java objects to/from JSON -->
+        <!-- JSON (org.json): converts Java objects to/from JSON -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.11.0</version>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- Apache PDFBox: extracts text and metadata from PDF files -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
         </dependency>
 
         <!-- JUnit 5: for writing unit tests -->

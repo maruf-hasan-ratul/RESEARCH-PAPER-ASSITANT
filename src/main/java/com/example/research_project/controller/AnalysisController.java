@@ -1,13 +1,14 @@
 package com.example.research_project.controller;
 
-import com.example.researchassistant.model.AnalysisResult;
-import com.example.researchassistant.model.Paper;
-import com.example.researchassistant.model.SimilarityResult;
-import com.example.researchassistant.service.AIService;
-import com.example.researchassistant.service.PaperService;
-import com.example.researchassistant.service.SimilarityService;
-import com.example.researchassistant.task.AnalysisTask;
-import com.example.researchassistant.util.JsonUtil;
+import com.example.research_project.model.AnalysisResult;
+import com.example.research_project.model.Paper;
+import com.example.research_project.model.SimilarityResult;
+import com.example.research_project.service.AIService;
+import com.example.research_project.service.PaperService;
+import com.example.research_project.service.SimilarityService;
+import com.example.research_project.task.AnalysisTask;
+import com.example.research_project.util.FileUtil;
+import com.example.research_project.util.JsonUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -292,7 +293,7 @@ public class AnalysisController {
 
         String json = JsonUtil.exportFull(p, lastResult.getKeywords(),
             lastResult.getSummary(), lastResult.getCategory());
-        if (com.example.researchassistant.util.FileUtil.writeTextFile(file.getAbsolutePath(), json)) {
+        if (FileUtil.writeTextFile(file.getAbsolutePath(), json)) {
             showAlert("Exported to:\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
         } else {
             showAlert("Export failed.", Alert.AlertType.ERROR);

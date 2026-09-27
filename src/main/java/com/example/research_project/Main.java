@@ -1,6 +1,6 @@
 package com.example.research_project;
 
-import com.example.researchassistant.database.Database;
+import com.example.research_project.database.Database;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -20,9 +20,10 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         try {
-            URL fxmlLocation = getClass().getResource(
-                "/com/example/researchassistant/fxml/main.fxml"
-            );
+            URL fxmlLocation = getClass().getResource("/com/example/research_project/fxml/main.fxml");
+            if (fxmlLocation == null) {
+                fxmlLocation = getClass().getResource("/com/example/researchassistant/fxml/main.fxml");
+            }
 
             if (fxmlLocation == null) {
                 throw new IOException("Cannot find main.fxml - check the resources folder.");

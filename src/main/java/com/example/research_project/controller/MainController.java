@@ -90,9 +90,10 @@ public class MainController {
      */
     private void loadView(String fxmlFile) {
         try {
-            URL location = getClass().getResource(
-                "/com/example/researchassistant/fxml/" + fxmlFile
-            );
+            URL location = getClass().getResource("/com/example/research_project/fxml/" + fxmlFile);
+            if (location == null) {
+                location = getClass().getResource("/com/example/researchassistant/fxml/" + fxmlFile);
+            }
             if (location == null) {
                 System.err.println("Cannot find FXML: " + fxmlFile);
                 return;

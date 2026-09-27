@@ -1,8 +1,9 @@
 package com.example.research_project.controller;
 
-import com.example.researchassistant.model.Paper;
-import com.example.researchassistant.service.PaperService;
-import com.example.researchassistant.util.FileUtil;
+import com.example.research_project.model.Paper;
+import com.example.research_project.service.PaperService;
+import com.example.research_project.util.FileUtil;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,6 +14,7 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -50,6 +52,12 @@ public class AddPaperController {
     @FXML
     public void initialize() {
         categoryCombo.setItems(FXCollections.observableArrayList(CATEGORIES));
+        Platform.runLater(() -> {
+            if (titleField.getScene() != null && titleField.getScene().getUserData() instanceof Paper p) {
+                setPaper(p);
+                titleField.getScene().setUserData(null);
+            }
+        });
     }
 
     /**
@@ -182,8 +190,11 @@ public class AddPaperController {
 
     private void navigateTo(String fxml) {
         try {
-            Node view = FXMLLoader.load(getClass().getResource(
-                "/com/example/researchassistant/fxml/" + fxml));
+            URL loc = getClass().getResource("/com/example/research_project/fxml/" + fxml);
+            if (loc == null) {
+                loc = getClass().getResource("/com/example/researchassistant/fxml/" + fxml);
+            }
+            Node view = FXMLLoader.load(loc);
             StackPane root = (StackPane) titleField.getScene().lookup("#contentArea");
             if (root != null) root.getChildren().setAll(view);
         } catch (IOException e) {

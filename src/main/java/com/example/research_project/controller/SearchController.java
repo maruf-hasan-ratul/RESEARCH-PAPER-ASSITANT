@@ -1,7 +1,7 @@
 package com.example.research_project.controller;
 
-import com.example.researchassistant.model.Paper;
-import com.example.researchassistant.service.PaperService;
+import com.example.research_project.model.Paper;
+import com.example.research_project.service.PaperService;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -164,8 +164,11 @@ public class SearchController {
 
     private void navigateTo(String fxml) {
         try {
-            Node view = FXMLLoader.load(getClass().getResource(
-                "/com/example/researchassistant/fxml/" + fxml));
+            java.net.URL loc = getClass().getResource("/com/example/research_project/fxml/" + fxml);
+            if (loc == null) {
+                loc = getClass().getResource("/com/example/researchassistant/fxml/" + fxml);
+            }
+            Node view = FXMLLoader.load(loc);
             StackPane root = (StackPane) resultsTable.getScene().lookup("#contentArea");
             if (root != null) root.getChildren().setAll(view);
         } catch (IOException e) {

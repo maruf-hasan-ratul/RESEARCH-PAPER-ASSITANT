@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.research_project.controller.AddPaperController">
+
+    <VBox spacing="20.0">
+        <padding>
+            <Insets bottom="28.0" left="28.0" right="28.0" top="24.0" />
+        </padding>
+
+        <!-- Top Header & Import Button -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <VBox spacing="3.0">
+                <Label fx:id="pageTitle" styleClass="page-header-title" text="Add New Paper" />
+                <Label styleClass="page-header-desc" text="Enter paper metadata or import directly from text/PDF." />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#onImportFile" styleClass="btn-secondary" text="📁 Import File (.txt / .pdf)" />
+        </HBox>
+
+        <!-- Main Form Card -->
+        <VBox spacing="18.0" styleClass="card">
+            <Label styleClass="card-title" text="Paper Metadata" />
+
+            <GridPane hgap="16.0" vgap="14.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120.0" prefWidth="140.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+
+                <!-- Title -->
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Title: *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <TextField fx:id="titleField" promptText="Enter full paper title (required)" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <!-- Authors -->
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Authors:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <TextField fx:id="authorsField" promptText="e.g. John Doe, Jane Smith, Alan Turing" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <!-- Year & Category Row -->
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Year &amp; Category:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <HBox spacing="14.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                    <TextField fx:id="yearField" prefWidth="120.0" promptText="Year (e.g. 2024)" />
+                    <ComboBox fx:id="categoryCombo" maxWidth="1.7976931348623157E308" promptText="Select Category" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <!-- Source / Publication Venue -->
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Source / Venue:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <TextField fx:id="sourceField" promptText="e.g. arXiv, IEEE Transactions, NeurIPS, Nature" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            </GridPane>
+        </VBox>
+
+        <!-- Paper Content / Sections Card -->
+        <VBox spacing="18.0" styleClass="card">
+            <Label styleClass="card-title" text="Content &amp; Text Sections" />
+
+            <VBox spacing="6.0">
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Abstract:" />
+                <TextArea fx:id="abstractArea" prefRowCount="5" promptText="Paste or type paper abstract..." wrapText="true" />
+            </VBox>
+
+            <VBox spacing="6.0">
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Methodology:" />
+                <TextArea fx:id="methodologyArea" prefRowCount="4" promptText="Summary of datasets, models, algorithms used..." wrapText="true" />
+            </VBox>
+
+            <VBox spacing="6.0">
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Key Findings / Results:" />
+                <TextArea fx:id="findingsArea" prefRowCount="4" promptText="Experimental results, empirical discoveries, conclusions..." wrapText="true" />
+            </VBox>
+        </VBox>
+
+        <!-- Action Buttons -->
+        <HBox alignment="CENTER_RIGHT" spacing="12.0">
+            <Button onAction="#onCancel" styleClass="btn-secondary" text="Cancel" />
+            <Button onAction="#onClear" styleClass="btn-secondary" text="Clear Form" />
+            <Button onAction="#onSave" styleClass="btn-primary" text="💾 Save Paper" />
+        </HBox>
+
+    </VBox>
+</ScrollPane>

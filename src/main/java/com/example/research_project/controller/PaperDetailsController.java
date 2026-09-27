@@ -1,8 +1,9 @@
 package com.example.research_project.controller;
 
-import com.example.researchassistant.model.Note;
-import com.example.researchassistant.model.Paper;
-import com.example.researchassistant.service.PaperService;
+import com.example.research_project.model.Note;
+import com.example.research_project.model.Paper;
+import com.example.research_project.service.PaperService;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -41,8 +43,11 @@ public class PaperDetailsController {
 
     @FXML
     public void initialize() {
-        // Check if a paper was passed via scene userData
-        // (set by PaperController before navigating here)
+        Platform.runLater(() -> {
+            if (lblTitle.getScene() != null && lblTitle.getScene().getUserData() instanceof Paper p) {
+                setPaper(p);
+            }
+        });
     }
 
     /**
@@ -128,8 +133,11 @@ public class PaperDetailsController {
 
     private void navigateTo(String fxml) {
         try {
-            Node view = FXMLLoader.load(getClass().getResource(
-                "/com/example/researchassistant/fxml/" + fxml));
+            URL loc = getClass().getResource("/com/example/research_project/fxml/" + fxml);
+            if (loc == null) {
+                loc = getClass().getResource("/com/example/researchassistant/fxml/" + fxml);
+            }
+            Node view = FXMLLoader.load(loc);
             StackPane root = (StackPane) lblTitle.getScene().lookup("#contentArea");
             if (root != null) root.getChildren().setAll(view);
         } catch (IOException e) {
