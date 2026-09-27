@@ -1,4 +1,4 @@
-package com.example.researchassistant.controller;
+package com.example.research_project.controller;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

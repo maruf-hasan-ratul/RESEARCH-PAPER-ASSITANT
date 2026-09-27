@@ -1,4 +1,4 @@
-package com.example.researchassistant.controller;
+package com.example.research_project.controller;
 
 import com.example.researchassistant.model.Note;
 import com.example.researchassistant.model.Paper;
