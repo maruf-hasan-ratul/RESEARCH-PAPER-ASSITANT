@@ -31,8 +31,6 @@
                         <Label styleClass="sidebar-subtitle" text="Smart Paper Assistant" />
                     </VBox>
                 </HBox>
-                <Label style="-fx-font-size: 10px; -fx-text-fill: #6366F1; -fx-font-weight: bold; -fx-padding: 3 0 0 0;"
-                       text="OOP UNIVERSITY PROJECT" />
             </VBox>
 
             <Separator opacity="0.15" />
