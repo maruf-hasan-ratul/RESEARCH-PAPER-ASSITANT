@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+<ScrollPane fitToWidth="true"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.DashboardController">
 
@@ -51,7 +51,7 @@
                     <Label styleClass="stat-label" text="TOTAL PAPERS" />
                 </HBox>
                 <Label fx:id="lblTotalPapers" styleClass="stat-value" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="In repository" />
+                <Label styleClass="text-muted" text="In repository" />
             </VBox>
 
             <!-- Total Notes Card -->
@@ -61,7 +61,7 @@
                     <Label styleClass="stat-label" text="RESEARCH NOTES" />
                 </HBox>
                 <Label fx:id="lblTotalNotes" styleClass="stat-value" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="User annotations" />
+                <Label styleClass="text-muted" text="User annotations" />
             </VBox>
 
             <!-- Favorite Papers Card -->
@@ -71,7 +71,7 @@
                     <Label styleClass="stat-label" text="FAVORITES" />
                 </HBox>
                 <Label fx:id="lblFavorites" styleClass="stat-value" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="Bookmarked papers" />
+                <Label styleClass="text-muted" text="Bookmarked papers" />
             </VBox>
 
             <!-- Categories Card -->
@@ -81,7 +81,7 @@
                     <Label styleClass="stat-label" text="CATEGORIES" />
                 </HBox>
                 <Label fx:id="lblCategories" styleClass="stat-value" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="Research domains" />
+                <Label styleClass="text-muted" text="Research domains" />
             </VBox>
         </GridPane>
 
@@ -99,8 +99,8 @@
                     <Label style="-fx-font-size: 16px;" text="💤" />
                     <Label styleClass="stat-label" text="UNREAD PAPERS" />
                 </HBox>
-                <Label fx:id="lblUnread" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="Queued to read" />
+                <Label fx:id="lblUnread" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="0" />
+                <Label styleClass="text-muted" text="Queued to read" />
             </VBox>
 
             <!-- Reading -->
@@ -110,7 +110,7 @@
                     <Label styleClass="stat-label" text="CURRENTLY READING" />
                 </HBox>
                 <Label fx:id="lblReading" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #38BDF8;" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="In active study" />
+                <Label styleClass="text-muted" text="In active study" />
             </VBox>
 
             <!-- Completed -->
@@ -119,14 +119,14 @@
                     <Label style="-fx-font-size: 16px;" text="✅" />
                     <Label styleClass="stat-label" text="COMPLETED" />
                 </HBox>
-                <Label fx:id="lblCompleted" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #34D399;" text="0" />
-                <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="Finished reading" />
+                <Label fx:id="lblCompleted" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #10B981;" text="0" />
+                <Label styleClass="text-muted" text="Finished reading" />
             </VBox>
         </GridPane>
 
         <!-- Quick Action Shortcut Buttons -->
         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SHORTCUTS:" />
+            <Label styleClass="filter-label" text="SHORTCUTS:" />
             <Button onAction="#onViewAllPapers" styleClass="btn-secondary" text="📚 Library" />
             <Button onAction="#onViewFavorites" styleClass="btn-secondary" text="⭐ Favorites" />
             <Button onAction="#onCompare" styleClass="btn-secondary" text="⚖️ Compare Papers" />
@@ -154,10 +154,10 @@
             <HBox alignment="CENTER_LEFT">
                 <VBox spacing="2.0">
                     <Label styleClass="card-title" text="Recent Papers" />
-                    <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;" text="Recently added papers into the repository" />
+                    <Label styleClass="text-muted" text="Recently added papers into the repository" />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button onAction="#onViewAllPapers" style="-fx-background-color: transparent; -fx-text-fill: #818CF8; -fx-font-size: 11px;" text="See All Papers →" />
+                <Button onAction="#onViewAllPapers" styleClass="btn-secondary" text="See All Papers →" />
             </HBox>
 
             <TableView fx:id="recentPapersTable" prefHeight="200.0">

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.research_project.controller.SettingsController">
+
+    <VBox spacing="20.0">
+        <padding>
+            <Insets bottom="28.0" left="28.0" right="28.0" top="24.0" />
+        </padding>
+
+        <!-- Page Header -->
+        <VBox spacing="3.0">
+            <Label styleClass="page-header-title" text="⚙️ Application Settings" />
+            <Label styleClass="page-header-desc" text="Customize the interface appearance, theme modes, and typography scaling." />
+        </VBox>
+
+        <!-- Card 1: Appearance & Theme -->
+        <VBox spacing="14.0" styleClass="card">
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <VBox spacing="2.0">
+                    <Label styleClass="card-title" text="🎨 Appearance &amp; Color Theme" />
+                    <Label styleClass="page-header-desc" text="Switch between professional Light and Dark UI modes." />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblCurrentThemeBadge" styleClass="badge-pill" text="Dark Mode Active" />
+            </HBox>
+
+            <Separator opacity="0.15" />
+
+            <VBox spacing="12.0">
+                <HBox alignment="CENTER_LEFT" spacing="24.0">
+                    <!-- Radio Dark -->
+                    <VBox spacing="4.0">
+                        <RadioButton fx:id="rbDark" onAction="#onThemeSelected" text="🌙 Dark Mode">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="themeToggleGroup" />
+                            </toggleGroup>
+                        </RadioButton>
+                        <Label styleClass="text-muted" text="Sleek dark slate aesthetic, ideal for low-light focus." />
+                    </VBox>
+
+                    <!-- Radio Light -->
+                    <VBox spacing="4.0">
+                        <RadioButton fx:id="rbLight" onAction="#onThemeSelected" text="☀️ Light Mode" toggleGroup="$themeToggleGroup" />
+                        <Label styleClass="text-muted" text="Crisp high-contrast theme, ideal for daytime reading." />
+                    </VBox>
+                </HBox>
+
+                <HBox alignment="CENTER_LEFT" spacing="12.0" style="-fx-padding: 8 0 0 0;">
+                    <Button fx:id="btnQuickToggle" onAction="#onQuickToggleTheme" styleClass="btn-secondary" text="⇄ Toggle Theme" />
+                    <Label styleClass="tip-label" text="Tip: You can also toggle the theme at any time from the sidebar." />
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- Card 2: Typography & Font Sizing -->
+        <VBox spacing="14.0" styleClass="card">
+            <VBox spacing="2.0">
+                <Label styleClass="card-title" text="🔤 Font Size &amp; Readability" />
+                <Label styleClass="page-header-desc" text="Adjust the application's base text size to suit your display and reading comfort." />
+            </VBox>
+
+            <Separator opacity="0.15" />
+
+            <HBox alignment="CENTER_LEFT" spacing="30.0">
+                <VBox spacing="4.0">
+                    <RadioButton fx:id="rbSmall" onAction="#onFontSizeSelected" text="Small (11px)">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="fontSizeToggleGroup" />
+                        </toggleGroup>
+                    </RadioButton>
+                    <Label styleClass="text-muted" text="Compact layout, high density." />
+                </VBox>
+
+                <VBox spacing="4.0">
+                    <RadioButton fx:id="rbMedium" onAction="#onFontSizeSelected" text="Medium (13px - Recommended)" toggleGroup="$fontSizeToggleGroup" />
+                    <Label styleClass="text-muted" text="Standard balanced UI typography." />
+                </VBox>
+
+                <VBox spacing="4.0">
+                    <RadioButton fx:id="rbLarge" onAction="#onFontSizeSelected" text="Large (15px)" toggleGroup="$fontSizeToggleGroup" />
+                    <Label styleClass="text-muted" text="Enlarged text for higher comfort." />
+                </VBox>
+            </HBox>
+
+            <!-- Live Typography Preview Panel -->
+            <VBox spacing="8.0" style="-fx-padding: 12; -fx-background-radius: 8px;" styleClass="sidebar-footer">
+                <Label styleClass="card-title" text="Preview: Live Typography Sample" />
+                <Label styleClass="paper-body-text" text="The AI Research Assistant extracts key insights, manages bibliographies, and accelerates literature reviews." wrapText="true" />
+                <HBox spacing="10.0">
+                    <Button styleClass="btn-primary" text="Sample Primary Button" />
+                    <Button styleClass="btn-secondary" text="Sample Secondary Button" />
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- Card 3: About & System Status -->
+        <VBox spacing="14.0" styleClass="card">
+            <Label styleClass="card-title" text="ℹ️ System &amp; Architecture Details" />
+            <Separator opacity="0.15" />
+
+            <GridPane hgap="16.0" vgap="10.0">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="140.0" prefWidth="180.0" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+
+                <Label styleClass="field-name" text="Application:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label styleClass="field-value" text="AI Research Assistant (JavaFX 21 + FXML)" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label styleClass="field-name" text="Database Storage:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label styleClass="field-value" text="Embedded SQLite 3.45 via SQLite JDBC" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label styleClass="field-name" text="AI Engine:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label styleClass="field-value" text="Local Ollama LLM (Qwen 2.5 3B) + Heuristic NLP Fallback" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                <Label styleClass="field-name" text="Theme Engine:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label styleClass="field-value" text="CSS Stylesheets (dark.css / light.css) + Preferences Persistence" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            </GridPane>
+        </VBox>
+    </VBox>
+</ScrollPane>

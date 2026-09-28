@@ -5,13 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="71426c33-d4f6-4ce2-885c-bc4c564f3f1c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/research_project/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/research_project/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/research_project/controller/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/research_project/controller/MainController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/research_project/controller/PaperDetailsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/research_project/controller/PaperDetailsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/add-paper.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/add-paper.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/analysis.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/analysis.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/comparison.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/comparison.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/favorites.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/favorites.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/main.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/main.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/paper-details.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/paper-details.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/papers.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/papers.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/reports.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/search.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/research_project/fxml/search.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/add-paper.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/add-paper.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/analysis.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/analysis.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/comparison.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/comparison.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/favorites.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/favorites.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/main.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/main.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/paper-details.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/paper-details.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/papers.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/papers.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/reports.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/search.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/researchassistant/fxml/search.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/example/research_project/ProjectTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/example/research_project/ProjectTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="c92e994e-86ab-45fc-9cfe-bdd9ae8bb5e4" value="" />
+    </colors>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />

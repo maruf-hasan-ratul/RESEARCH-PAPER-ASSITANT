@@ -1,5 +1,6 @@
 package com.example.research_project.controller;
 
+import com.example.research_project.util.ThemeManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -21,10 +22,29 @@ public class MainController {
     @FXML private Button btnFavorites;
     @FXML private Button btnCompare;
     @FXML private Button btnReports;
+    @FXML private Button btnSettings;
+    @FXML private Button btnThemeToggle;
 
     @FXML
     public void initialize() {
+        updateThemeToggleUI();
+        ThemeManager.addListener((theme, fontSize) -> updateThemeToggleUI());
         showDashboard();
+    }
+
+    private void updateThemeToggleUI() {
+        if (btnThemeToggle != null) {
+            if (ThemeManager.isDarkMode()) {
+                btnThemeToggle.setText("☀️  Light Mode");
+            } else {
+                btnThemeToggle.setText("🌙  Dark Mode");
+            }
+        }
+    }
+
+    @FXML
+    public void onToggleTheme() {
+        ThemeManager.toggleTheme();
     }
 
     @FXML
@@ -75,6 +95,12 @@ public class MainController {
         setActive(btnReports);
     }
 
+    @FXML
+    public void showSettings() {
+        loadView("settings.fxml");
+        setActive(btnSettings);
+    }
+
     private void loadView(String fxmlFile) {
         try {
             URL location = getClass().getResource("/com/example/research_project/fxml/" + fxmlFile);
@@ -86,6 +112,9 @@ public class MainController {
                 return;
             }
             Node view = FXMLLoader.load(location);
+            if (view instanceof javafx.scene.Parent parent) {
+                parent.getStylesheets().clear();
+            }
             contentArea.getChildren().setAll(view);
         } catch (IOException e) {
             System.err.println("Failed to load " + fxmlFile + ": " + e.getMessage());
@@ -95,12 +124,14 @@ public class MainController {
 
     private void setActive(Button selected) {
         Button[] allButtons = {btnDashboard, btnPapers, btnAddPaper, btnAnalysis, btnSearch,
-                               btnFavorites, btnCompare, btnReports};
+                               btnFavorites, btnCompare, btnReports, btnSettings};
         for (Button btn : allButtons) {
-            if (btn == selected) {
-                btn.setStyle("-fx-background-color: #4F46E5; -fx-text-fill: #FFFFFF; -fx-font-weight: bold; -fx-background-radius: 8px; -fx-padding: 10 14; -fx-alignment: BASELINE_LEFT;");
-            } else {
-                btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #94A3B8; -fx-font-weight: 500; -fx-background-radius: 8px; -fx-padding: 10 14; -fx-alignment: BASELINE_LEFT;");
+            if (btn != null) {
+                btn.setStyle(null); // Clear hardcoded inline styles to let CSS classes manage appearance
+                btn.getStyleClass().remove("nav-button-active");
+                if (btn == selected) {
+                    btn.getStyleClass().add("nav-button-active");
+                }
             }
         }
     }

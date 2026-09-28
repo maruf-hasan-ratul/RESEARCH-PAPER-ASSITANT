@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+<ScrollPane fitToWidth="true"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.PaperDetailsController">
 
@@ -35,7 +35,7 @@
             </VBox>
             <Region HBox.hgrow="ALWAYS" />
             <HBox alignment="CENTER_RIGHT" spacing="10.0">
-                <Button fx:id="btnFavorite" onAction="#onToggleFavorite" text="☆ Add to Favorites" />
+                <Button fx:id="btnFavorite" onAction="#onToggleFavorite" styleClass="btn-secondary" text="☆ Add to Favorites" />
                 <Button onAction="#onEdit" styleClass="btn-secondary" text="✏️ Edit Paper" />
                 <Button onAction="#onAnalyse" styleClass="btn-primary" text="⚡ Analyse" />
             </HBox>
@@ -44,12 +44,11 @@
         <!-- Paper Overview Card -->
         <VBox spacing="14.0" styleClass="card">
             <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label fx:id="lblTitle" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF;"
-                       text="Paper Title" wrapText="true" HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblTitle" styleClass="paper-title" text="Paper Title" wrapText="true" HBox.hgrow="ALWAYS" />
                 <Region HBox.hgrow="ALWAYS" />
                 <!-- Reading Status Selector -->
                 <HBox alignment="CENTER_RIGHT" spacing="6.0">
-                    <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold; -fx-font-size: 12px;" text="Status:" />
+                    <Label styleClass="field-name" text="Status:" />
                     <ComboBox fx:id="comboReadingStatus" onAction="#onStatusChanged" prefWidth="140.0" />
                 </HBox>
             </HBox>
@@ -60,20 +59,20 @@
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
 
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Authors:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <Label fx:id="lblAuthors" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                <Label styleClass="field-name" text="Authors:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <Label fx:id="lblAuthors" styleClass="field-value" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Year:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label fx:id="lblYear" style="-fx-text-fill: #E2E8F0;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label styleClass="field-name" text="Year:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <Label fx:id="lblYear" styleClass="field-value" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Category:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label styleClass="field-name" text="Category:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                 <Label fx:id="lblCategory" styleClass="badge-pill" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Source / Venue:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <Label fx:id="lblSource" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <Label styleClass="field-name" text="Source / Venue:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <Label fx:id="lblSource" styleClass="field-value" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <Label fx:id="lblKeywords" style="-fx-text-fill: #A5B4FC; -fx-font-weight: 500;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label styleClass="field-name" text="Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <Label fx:id="lblKeywords" styleClass="badge-ai" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                 <rowConstraints>
                     <RowConstraints />
                     <RowConstraints />
@@ -89,7 +88,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <Label styleClass="card-title" text="📑 Academic Citation Generator" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="Style:" />
+                <Label styleClass="filter-label" text="Style:" />
                 <ComboBox fx:id="comboCitationStyle" onAction="#onCitationStyleChanged" prefWidth="160.0" />
                 <Button onAction="#onCopyCitation" styleClass="btn-primary" text="📋 Copy Citation" />
             </HBox>
@@ -98,24 +97,24 @@
                       promptText="Formatted citation will appear here..." />
 
             <HBox alignment="CENTER_LEFT">
-                <Label fx:id="lblCitationFeedback" style="-fx-text-fill: #10B981; -fx-font-size: 11px;" text="" />
+                <Label fx:id="lblCitationFeedback" style="-fx-text-fill: #10B981; -fx-font-size: 11px; -fx-font-weight: bold;" text="" />
             </HBox>
         </VBox>
 
         <!-- Sections: Abstract, Methodology, Findings -->
         <VBox spacing="14.0" styleClass="card">
             <Label styleClass="card-title" text="Abstract" />
-            <Label fx:id="lblAbstract" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+            <Label fx:id="lblAbstract" styleClass="paper-body-text" text="-" wrapText="true" />
 
             <Separator opacity="0.15" />
 
             <Label styleClass="card-title" text="Methodology" />
-            <Label fx:id="lblMethodology" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+            <Label fx:id="lblMethodology" styleClass="paper-body-text" text="-" wrapText="true" />
 
             <Separator opacity="0.15" />
 
             <Label styleClass="card-title" text="Findings &amp; Key Results" />
-            <Label fx:id="lblFindings" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 3px;" text="-" wrapText="true" />
+            <Label fx:id="lblFindings" styleClass="paper-body-text" text="-" wrapText="true" />
         </VBox>
 
         <!-- Researcher Notes Card -->

@@ -32,6 +32,9 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader(fxmlLocation);
             Scene scene = new Scene(loader.load(), 1100, 680);
 
+            // Register and apply current theme and font size
+            com.example.research_project.util.ThemeManager.registerScene(scene);
+
             stage.setTitle("AI Research Assistant");
             stage.setMinWidth(900);
             stage.setMinHeight(600);

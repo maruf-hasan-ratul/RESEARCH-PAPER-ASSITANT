@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="16.0" stylesheets="@../css/style.css"
+<VBox spacing="16.0"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.research_project.controller.PaperController">
     <padding>
@@ -21,7 +21,7 @@
     <!-- Header & Top Action Bar -->
     <HBox alignment="CENTER_LEFT" spacing="12.0">
         <VBox spacing="3.0">
-            <Label styleClass="page-header-title" text="Papers Library" />
+            <Label styleClass="page-header-title" text="📚 Papers Library" />
             <Label styleClass="page-header-desc" text="Browse, inspect, edit, and analyze academic papers in your library." />
         </VBox>
         <Region HBox.hgrow="ALWAYS" />
@@ -38,7 +38,7 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <!-- Status indicator -->
-        <Label fx:id="lblStatus" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Loading papers..." />
+        <Label fx:id="lblStatus" styleClass="text-muted" text="Loading papers..." />
     </HBox>
 
     <!-- Action Toolbar & Papers Table Card -->
@@ -70,8 +70,7 @@
             </columnResizePolicy>
         </TableView>
 
-        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;"
-               text="Tip: Double-click any row to view its full details, notes, and keywords." />
+        <Label styleClass="tip-label" text="Tip: Double-click any row to view its full details, notes, and keywords." />
     </VBox>
 
 </VBox>

@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+<ScrollPane fitToWidth="true"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.AnalysisController">
 
@@ -56,7 +56,7 @@
             <!-- Multithreaded Progress Bar and Status -->
             <VBox spacing="6.0">
                 <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" progress="0.0" />
-                <Label fx:id="lblStatus" style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;" text="Ready to analyse." />
+                <Label fx:id="lblStatus" styleClass="text-muted" text="Ready to analyse." />
             </VBox>
         </VBox>
 
@@ -76,7 +76,7 @@
 
             <!-- Domain Category Badge Row -->
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="Predicted Domain:" />
+                <Label styleClass="field-name" text="Predicted Domain:" />
                 <Label fx:id="lblCategory" styleClass="badge-ai" text="-" />
             </HBox>
 
@@ -88,18 +88,18 @@
 
                 <!-- Left Column: Summary -->
                 <VBox spacing="6.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Executive Summary:" />
+                    <Label styleClass="form-label" text="Executive Summary:" />
                     <TextArea fx:id="summaryArea" editable="false" prefRowCount="6" promptText="Summary will appear here..." wrapText="true" />
                 </VBox>
 
                 <!-- Right Column: Keywords -->
                 <VBox spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Extracted Keywords:" />
+                    <Label styleClass="form-label" text="Extracted Keywords:" />
                     <TextArea fx:id="keywordsArea" editable="false" prefRowCount="6" promptText="Keywords list..." wrapText="true" />
                 </VBox>
-            <rowConstraints>
-               <RowConstraints />
-            </rowConstraints>
+                <rowConstraints>
+                    <RowConstraints />
+                </rowConstraints>
             </GridPane>
 
             <!-- Methodology & Findings -->
@@ -110,33 +110,33 @@
                 </columnConstraints>
 
                 <VBox spacing="6.0" GridPane.columnIndex="0">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Synthesized Methodology:" />
+                    <Label styleClass="form-label" text="Synthesized Methodology:" />
                     <TextArea fx:id="methodologyArea" editable="false" prefRowCount="4" promptText="Extracted methodology..." wrapText="true" />
                 </VBox>
 
                 <VBox spacing="6.0" GridPane.columnIndex="1">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #E2E8F0;" text="Synthesized Findings:" />
+                    <Label styleClass="form-label" text="Synthesized Findings:" />
                     <TextArea fx:id="findingsArea" editable="false" prefRowCount="4" promptText="Extracted findings &amp; results..." wrapText="true" />
                 </VBox>
-            <rowConstraints>
-               <RowConstraints />
-            </rowConstraints>
+                <rowConstraints>
+                    <RowConstraints />
+                </rowConstraints>
             </GridPane>
         </VBox>
 
         <!-- Paper Comparison / Similarity Tool Card -->
         <VBox spacing="14.0" styleClass="card">
             <Label styleClass="card-title" text="Paper Comparison &amp; Similarity" />
-            <Label style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;"
+            <Label styleClass="text-muted"
                    text="Compare the active paper above with another paper using Jaccard &amp; Cosine NLP similarity algorithms." />
 
             <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <Label style="-fx-text-fill: #E2E8F0; -fx-font-weight: bold;" text="Compare with:" />
+                <Label styleClass="form-label" text="Compare with:" />
                 <ComboBox fx:id="compareCombo" maxWidth="1.7976931348623157E308" promptText="Select second paper..." HBox.hgrow="ALWAYS" />
                 <Button onAction="#onCompare" styleClass="btn-primary" text="⚖️ Compare" />
 
                 <HBox alignment="CENTER_LEFT" spacing="8.0" style="-fx-padding: 0 0 0 10;">
-                    <Label style="-fx-text-fill: #94A3B8; -fx-font-weight: bold;" text="Similarity Score:" />
+                    <Label styleClass="field-name" text="Similarity Score:" />
                     <Label fx:id="lblSimilarity" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #10B981;" text="-" />
                 </HBox>
             </HBox>

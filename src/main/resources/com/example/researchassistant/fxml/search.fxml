@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="18.0" stylesheets="@../css/style.css"
+<VBox spacing="18.0"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.research_project.controller.SearchController">
     <padding>
@@ -30,7 +30,7 @@
         <!-- Row 1: Search Query -->
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="SEARCH KEYWORD / TITLE / AUTHOR" />
+                <Label styleClass="filter-label" text="SEARCH KEYWORD / TITLE / AUTHOR" />
                 <TextField fx:id="searchField" onAction="#onSearch" promptText="Enter query term (e.g. neural network, transformer, author name)..." />
             </VBox>
 
@@ -46,25 +46,25 @@
         <HBox alignment="CENTER_LEFT" spacing="12.0">
             <!-- Category Filter -->
             <VBox prefWidth="200.0" spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="CATEGORY" />
+                <Label styleClass="filter-label" text="CATEGORY" />
                 <ComboBox fx:id="categoryCombo" maxWidth="1.7976931348623157E308" />
             </VBox>
 
             <!-- Reading Status Filter -->
             <VBox prefWidth="160.0" spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="READING STATUS" />
+                <Label styleClass="filter-label" text="READING STATUS" />
                 <ComboBox fx:id="statusCombo" maxWidth="1.7976931348623157E308" />
             </VBox>
 
             <!-- Year Filter -->
             <VBox prefWidth="120.0" spacing="4.0">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="YEAR" />
+                <Label styleClass="filter-label" text="YEAR" />
                 <ComboBox fx:id="yearCombo" maxWidth="1.7976931348623157E308" />
             </VBox>
 
             <!-- Favorites Filter -->
             <VBox prefWidth="140.0" spacing="4.0">
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="BOOKMARKS" />
+                <Label styleClass="filter-label" text="BOOKMARKS" />
                 <ComboBox fx:id="favoriteCombo" maxWidth="1.7976931348623157E308" />
             </VBox>
         </HBox>
@@ -96,8 +96,7 @@
             </columnResizePolicy>
         </TableView>
 
-        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;"
-               text="Tip: Double-click any row to view its full details and citations." />
+        <Label styleClass="tip-label" text="Tip: Double-click any row to view its full details and citations." />
     </VBox>
 
 </VBox>

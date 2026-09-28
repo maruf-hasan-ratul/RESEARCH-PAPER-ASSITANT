@@ -103,12 +103,14 @@ public class PaperDetailsController {
 
     private void updateFavoriteButtonState() {
         if (btnFavorite == null || currentPaper == null) return;
+        btnFavorite.setStyle(null);
+        btnFavorite.getStyleClass().removeAll("btn-secondary", "btn-favorite-active");
         if (currentPaper.isFavorite()) {
             btnFavorite.setText("★ In Favorites");
-            btnFavorite.setStyle("-fx-background-color: #F59E0B; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;");
+            btnFavorite.getStyleClass().add("btn-favorite-active");
         } else {
             btnFavorite.setText("☆ Add to Favorites");
-            btnFavorite.setStyle("-fx-background-color: #334155; -fx-text-fill: #F8FAFC; -fx-font-weight: 500;");
+            btnFavorite.getStyleClass().add("btn-secondary");
         }
     }
 

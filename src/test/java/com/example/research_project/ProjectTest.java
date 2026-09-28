@@ -92,14 +92,45 @@ public class ProjectTest {
         String[] fxmls = {
             "main.fxml", "dashboard.fxml", "papers.fxml",
             "add-paper.fxml", "analysis.fxml", "paper-details.fxml", "search.fxml",
-            // Extended screens added in Step 2
-            "favorites.fxml", "comparison.fxml", "reports.fxml"
+            // Extended screens
+            "favorites.fxml", "comparison.fxml", "reports.fxml",
+            // Settings screen
+            "settings.fxml"
         };
 
         for (String fxml : fxmls) {
             URL url = getClass().getResource("/com/example/research_project/fxml/" + fxml);
             assertNotNull(url, "Resource should exist: /com/example/research_project/fxml/" + fxml);
         }
+
+        // Test theme CSS files
+        assertNotNull(getClass().getResource("/com/example/research_project/css/dark.css"), "dark.css should exist");
+        assertNotNull(getClass().getResource("/com/example/research_project/css/light.css"), "light.css should exist");
+        assertNotNull(getClass().getResource("/css/dark.css"), "fallback /css/dark.css should exist");
+        assertNotNull(getClass().getResource("/css/light.css"), "fallback /css/light.css should exist");
+    }
+
+    @Test
+    public void testThemeManagerSwitchingAndPersistence() {
+        com.example.research_project.util.ThemeManager.setTheme(com.example.research_project.util.ThemeManager.Theme.DARK);
+        assertEquals(com.example.research_project.util.ThemeManager.Theme.DARK, com.example.research_project.util.ThemeManager.getTheme());
+        assertTrue(com.example.research_project.util.ThemeManager.isDarkMode());
+
+        // Toggle to Light
+        com.example.research_project.util.ThemeManager.toggleTheme();
+        assertEquals(com.example.research_project.util.ThemeManager.Theme.LIGHT, com.example.research_project.util.ThemeManager.getTheme());
+        assertFalse(com.example.research_project.util.ThemeManager.isDarkMode());
+
+        // Font size adjustments
+        com.example.research_project.util.ThemeManager.setFontSize(com.example.research_project.util.ThemeManager.FontSize.LARGE);
+        assertEquals(com.example.research_project.util.ThemeManager.FontSize.LARGE, com.example.research_project.util.ThemeManager.getFontSize());
+
+        com.example.research_project.util.ThemeManager.setFontSize(com.example.research_project.util.ThemeManager.FontSize.SMALL);
+        assertEquals(com.example.research_project.util.ThemeManager.FontSize.SMALL, com.example.research_project.util.ThemeManager.getFontSize());
+
+        // Reset to standard default
+        com.example.research_project.util.ThemeManager.setFontSize(com.example.research_project.util.ThemeManager.FontSize.MEDIUM);
+        com.example.research_project.util.ThemeManager.setTheme(com.example.research_project.util.ThemeManager.Theme.DARK);
     }
 
     @Test

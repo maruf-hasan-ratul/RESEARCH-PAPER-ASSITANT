@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="16.0" stylesheets="@../css/style.css"
+<VBox spacing="16.0"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.research_project.controller.FavoritesController">
     <padding>
@@ -34,7 +34,7 @@
         <Button onAction="#onQuickSearch" styleClass="btn-primary" text="Filter" />
         <Button onAction="#onRefresh" styleClass="btn-secondary" text="🔄 Refresh" />
         <Region HBox.hgrow="ALWAYS" />
-        <Label fx:id="lblStatus" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="Loading favorites..." />
+        <Label fx:id="lblStatus" styleClass="text-muted" text="Loading favorites..." />
     </HBox>
 
     <!-- Table Card -->
@@ -63,7 +63,7 @@
             </columnResizePolicy>
         </TableView>
 
-        <Label style="-fx-font-size: 11px; -fx-text-fill: #64748B;"
+        <Label styleClass="tip-label"
                text="Tip: Double-click any paper to open details, change reading status, or copy citations." />
     </VBox>
 

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+<ScrollPane fitToWidth="true"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.ReportController">
 
@@ -32,7 +32,7 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <Label styleClass="card-title" text="1. Select Papers to Include in Report" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="lblSelectionSummary" style="-fx-text-fill: #94A3B8; -fx-font-size: 12px;" text="All papers selected" />
+                <Label fx:id="lblSelectionSummary" styleClass="text-muted" text="All papers selected" />
                 <Button onAction="#onSelectAll" styleClass="btn-secondary" text="Select All" />
                 <Button onAction="#onDeselectAll" styleClass="btn-secondary" text="Deselect All" />
             </HBox>
@@ -63,7 +63,7 @@
             <Label styleClass="card-title" text="2. Report Preview" />
             <TextArea fx:id="txtReportPreview" editable="false" prefRowCount="16"
                       promptText="Click 'Generate Research Report' above to synthesize analysis..."
-                      style="-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-font-size: 12px; -fx-line-spacing: 2px;" wrapText="true" />
+                      style="-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-line-spacing: 2px;" wrapText="true" />
         </VBox>
 
     </VBox>

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="720.0" prefWidth="1180.0" stylesheets="@../css/style.css"
+<BorderPane prefHeight="720.0" prefWidth="1180.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.MainController">
 
@@ -37,8 +37,7 @@
 
             <!-- Navigation Links -->
             <VBox spacing="6.0">
-                <Label style="-fx-font-size: 10px; -fx-text-fill: #64748B; -fx-font-weight: bold; -fx-padding: 6 8 2 8;"
-                       text="NAVIGATION" />
+                <Label styleClass="sidebar-section-header" text="NAVIGATION" />
 
                 <Button fx:id="btnDashboard" maxWidth="1.7976931348623157E308" onAction="#showDashboard"
                         styleClass="nav-button" text="📊  Dashboard" />
@@ -54,18 +53,38 @@
 
                 <Button fx:id="btnSearch" maxWidth="1.7976931348623157E308" onAction="#showSearch"
                         styleClass="nav-button" text="🔍  Search &amp; Filter" />
+
+                <Label styleClass="sidebar-section-header" text="EXTRAS" />
+
+                <Button fx:id="btnFavorites" maxWidth="1.7976931348623157E308" onAction="#showFavorites"
+                        styleClass="nav-button" text="⭐  Favorites" />
+
+                <Button fx:id="btnCompare" maxWidth="1.7976931348623157E308" onAction="#showComparison"
+                        styleClass="nav-button" text="⚖️  Compare Papers" />
+
+                <Button fx:id="btnReports" maxWidth="1.7976931348623157E308" onAction="#showReports"
+                        styleClass="nav-button" text="📑  Research Reports" />
+
+                <Label styleClass="sidebar-section-header" text="PREFERENCES" />
+
+                <Button fx:id="btnSettings" maxWidth="1.7976931348623157E308" onAction="#showSettings"
+                        styleClass="nav-button" text="⚙️  Settings" />
             </VBox>
 
             <!-- Spacer pushes footer to bottom -->
             <Region VBox.vgrow="ALWAYS" />
 
-            <!-- Sidebar Footer -->
-            <VBox spacing="6.0" style="-fx-background-color: #1E293B; -fx-padding: 10; -fx-background-radius: 8;">
+            <!-- Quick Theme Switcher Button in Sidebar -->
+            <Button fx:id="btnThemeToggle" maxWidth="1.7976931348623157E308" onAction="#onToggleTheme"
+                    styleClass="theme-switch-btn" text="☀️  Light Mode" />
+
+            <!-- Sidebar Footer Status Box -->
+            <VBox spacing="6.0" styleClass="sidebar-footer">
                 <HBox alignment="CENTER_LEFT" spacing="6.0">
-                    <Label style="-fx-text-fill: #10B981; -fx-font-size: 10px;" text="●" />
-                    <Label style="-fx-text-fill: #94A3B8; -fx-font-size: 11px; -fx-font-weight: bold;" text="SQLite &amp; Ollama" />
+                    <Label styleClass="status-dot" text="●" />
+                    <Label styleClass="sidebar-footer-text" text="SQLite &amp; Ollama" />
                 </HBox>
-                <Label style="-fx-text-fill: #64748B; -fx-font-size: 10px;" text="JavaFX 21 + org.json" />
+                <Label styleClass="sidebar-footer-subtext" text="JavaFX 21 + org.json" />
             </VBox>
         </VBox>
     </left>

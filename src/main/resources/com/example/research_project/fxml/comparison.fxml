@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" stylesheets="@../css/style.css"
+<ScrollPane fitToWidth="true"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.example.research_project.controller.PaperComparisonController">
 
@@ -34,14 +34,14 @@
         <VBox spacing="12.0" styleClass="card">
             <HBox alignment="CENTER_LEFT" spacing="16.0">
                 <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="PAPER A" />
+                    <Label styleClass="filter-label" text="PAPER A" />
                     <ComboBox fx:id="comboPaperA" maxWidth="1.7976931348623157E308" promptText="Select Paper A..." />
                 </VBox>
 
-                <Label style="-fx-font-size: 16px; -fx-text-fill: #64748B; -fx-padding: 16 0 0 0;" text="VS" />
+                <Label style="-fx-font-size: 16px; -fx-padding: 16 0 0 0;" styleClass="text-muted" text="VS" />
 
                 <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8; -fx-font-size: 11px;" text="PAPER B" />
+                    <Label styleClass="filter-label" text="PAPER B" />
                     <ComboBox fx:id="comboPaperB" maxWidth="1.7976931348623157E308" promptText="Select Paper B..." />
                 </VBox>
 
@@ -59,11 +59,11 @@
                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <VBox spacing="2.0">
                         <Label styleClass="stat-label" text="TEXTUAL SIMILARITY SCORE" />
-                        <Label fx:id="lblSimilarityScore" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #6366F1;" text="0.00%" />
+                        <Label fx:id="lblSimilarityScore" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #4F46E5;" text="0.00%" />
                     </VBox>
                     <Region HBox.hgrow="ALWAYS" />
                     <VBox alignment="CENTER_RIGHT" prefWidth="250.0" spacing="4.0">
-                        <Label style="-fx-font-size: 11px; -fx-text-fill: #94A3B8;" text="TF-IDF Cosine Match" />
+                        <Label styleClass="text-muted" text="TF-IDF Cosine Match" />
                         <ProgressBar fx:id="progressSimilarity" maxWidth="1.7976931348623157E308" progress="0.0" />
                     </VBox>
                 </HBox>
@@ -80,13 +80,13 @@
                     </columnConstraints>
 
                     <Label style="-fx-font-weight: bold; -fx-text-fill: #10B981;" text="Common Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                    <Label fx:id="lblCommonKeywords" style="-fx-text-fill: #A7F3D0; -fx-font-weight: bold;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <Label fx:id="lblCommonKeywords" styleClass="badge-ai" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="Paper A Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <Label fx:id="lblKeywordsA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <Label styleClass="filter-label" text="Paper A Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Label fx:id="lblKeywordsA" styleClass="field-value" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <Label style="-fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="Paper B Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                    <Label fx:id="lblKeywordsB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <Label styleClass="filter-label" text="Paper B Keywords:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <Label fx:id="lblKeywordsB" styleClass="field-value" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 </GridPane>
             </VBox>
 
@@ -94,60 +94,60 @@
             <HBox spacing="16.0">
                 <!-- Paper A Column -->
                 <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
-                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #818CF8;" text="Paper A" />
+                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #4F46E5;" text="Paper A" />
                     <Separator opacity="0.2" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="TITLE" />
-                    <Label fx:id="lblTitleA" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="TITLE" />
+                    <Label fx:id="lblTitleA" styleClass="paper-title-sm" text="-" wrapText="true" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="AUTHORS" />
-                    <Label fx:id="lblAuthorsA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="AUTHORS" />
+                    <Label fx:id="lblAuthorsA" styleClass="field-value" text="-" wrapText="true" />
 
                     <HBox spacing="20.0">
                         <VBox spacing="2.0">
-                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="YEAR" />
-                            <Label fx:id="lblYearA" style="-fx-text-fill: #E2E8F0;" text="-" />
+                            <Label styleClass="filter-label" text="YEAR" />
+                            <Label fx:id="lblYearA" styleClass="field-value" text="-" />
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="CATEGORY" />
+                            <Label styleClass="filter-label" text="CATEGORY" />
                             <Label fx:id="lblCategoryA" styleClass="badge-pill" text="-" />
                         </VBox>
                     </HBox>
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SOURCE / VENUE" />
-                    <Label fx:id="lblSourceA" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="SOURCE / VENUE" />
+                    <Label fx:id="lblSourceA" styleClass="field-value" text="-" wrapText="true" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SUMMARY / ABSTRACT" />
-                    <Label fx:id="lblSummaryA" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 2px;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="SUMMARY / ABSTRACT" />
+                    <Label fx:id="lblSummaryA" styleClass="paper-body-text" text="-" wrapText="true" />
                 </VBox>
 
                 <!-- Paper B Column -->
                 <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
-                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #A78BFA;" text="Paper B" />
+                    <Label style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #7C3AED;" text="Paper B" />
                     <Separator opacity="0.2" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="TITLE" />
-                    <Label fx:id="lblTitleB" style="-fx-text-fill: #FFFFFF; -fx-font-weight: bold;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="TITLE" />
+                    <Label fx:id="lblTitleB" styleClass="paper-title-sm" text="-" wrapText="true" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="AUTHORS" />
-                    <Label fx:id="lblAuthorsB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="AUTHORS" />
+                    <Label fx:id="lblAuthorsB" styleClass="field-value" text="-" wrapText="true" />
 
                     <HBox spacing="20.0">
                         <VBox spacing="2.0">
-                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="YEAR" />
-                            <Label fx:id="lblYearB" style="-fx-text-fill: #E2E8F0;" text="-" />
+                            <Label styleClass="filter-label" text="YEAR" />
+                            <Label fx:id="lblYearB" styleClass="field-value" text="-" />
                         </VBox>
                         <VBox spacing="2.0">
-                            <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="CATEGORY" />
+                            <Label styleClass="filter-label" text="CATEGORY" />
                             <Label fx:id="lblCategoryB" styleClass="badge-pill" text="-" />
                         </VBox>
                     </HBox>
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SOURCE / VENUE" />
-                    <Label fx:id="lblSourceB" style="-fx-text-fill: #E2E8F0;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="SOURCE / VENUE" />
+                    <Label fx:id="lblSourceB" styleClass="field-value" text="-" wrapText="true" />
 
-                    <Label style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94A3B8;" text="SUMMARY / ABSTRACT" />
-                    <Label fx:id="lblSummaryB" style="-fx-text-fill: #CBD5E1; -fx-line-spacing: 2px;" text="-" wrapText="true" />
+                    <Label styleClass="filter-label" text="SUMMARY / ABSTRACT" />
+                    <Label fx:id="lblSummaryB" styleClass="paper-body-text" text="-" wrapText="true" />
                 </VBox>
             </HBox>
 
