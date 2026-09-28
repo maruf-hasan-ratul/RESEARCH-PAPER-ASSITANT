@@ -16,17 +16,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-/**
- * FavoritesController.java
- *
- * Dedicated screen for managing bookmarked / favorite research papers.
- * Allows instant viewing, filtering/searching among favorites, and navigation.
- *
- * MULTITHREADING:
- *   - loadFavorites() runs DB queries in a background thread via TaskUtil.
- *   - onQuickSearch() filters off the FX thread to keep the table responsive.
- *   - onRemoveFavorite() performs the DB update in a background thread.
- */
 public class FavoritesController {
 
     @FXML private TextField searchField;
@@ -75,7 +64,6 @@ public class FavoritesController {
                 new SimpleStringProperty(c.getValue().getCreatedAt()));
     }
 
-    /** Loads favorite papers off the FX thread; updates the table on completion. */
     private void loadFavoritesAsync() {
         lblStatus.setText("Loading…");
         TaskUtil.run(

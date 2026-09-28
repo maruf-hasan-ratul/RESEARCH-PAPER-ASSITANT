@@ -20,21 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ReportController.java
- *
- * Allows users to select multiple papers and synthesize comprehensive
- * research analysis reports with summary statistics, topic distribution,
- * common keywords, similarity matrix, and citations.
- * Reports can be previewed directly and exported as publication-ready PDFs.
- *
- * MULTITHREADING:
- *   - loadPapersAsync() fetches papers off the FX thread.
- *   - onGenerateReport() runs the (potentially slow) report text generation in a
- *     background thread, showing "Generating report…" feedback while it runs.
- *   - onExportPdf() runs the PDFBox rendering pipeline in a background thread so
- *     the UI stays responsive even for large, multi-paper exports.
- */
 public class ReportController {
 
     public static class SelectablePaper {
@@ -100,7 +85,6 @@ public class ReportController {
         papersSelectionTable.setItems(selectablePapers);
     }
 
-    /** Loads all papers into the selection table in a background thread. */
     private void loadPapersAsync() {
         if (lblSelectionSummary != null) lblSelectionSummary.setText("Loading papers…");
         TaskUtil.run(
@@ -147,10 +131,6 @@ public class ReportController {
         return list;
     }
 
-    /**
-     * Generates the text report in a background thread (involves DB lookups +
-     * pairwise similarity computation which can be slow for many papers).
-     */
     @FXML
     private void onGenerateReport() {
         List<Paper> selected = getSelectedPapers();
@@ -179,9 +159,6 @@ public class ReportController {
         );
     }
 
-    /**
-     * Exports the PDF in a background thread so PDFBox rendering doesn't freeze the UI.
-     */
     @FXML
     private void onExportPdf() {
         List<Paper> selected = getSelectedPapers();

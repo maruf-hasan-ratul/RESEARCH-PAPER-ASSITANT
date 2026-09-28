@@ -19,23 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-/**
- * PaperDetailsController.java
- *
- * Displays all information about one paper:
- *   - title, authors, year, category, source
- *   - abstract, methodology, findings, keywords, notes
- *   - favorite toggle button (☆ / ★)
- *   - reading status dropdown (UNREAD, READING, COMPLETED)
- *   - academic citation generator (IEEE, APA, MLA, BibTeX)
- *
- * MULTITHREADING:
- *   - loadNotesAsync()         — loads notes off the FX thread.
- *   - loadKeywordsAsync()      — DB keyword lookup off the FX thread.
- *   - onToggleFavorite()       — DB write off the FX thread.
- *   - onStatusChanged()        — DB write off the FX thread.
- *   - onAddNote() / onDeleteNote() — DB writes off the FX thread.
- */
 public class PaperDetailsController {
 
     @FXML private Label lblPageTitle;
@@ -49,16 +32,13 @@ public class PaperDetailsController {
     @FXML private Label lblFindings;
     @FXML private Label lblKeywords;
 
-    // Favorite & Reading Status controls
     @FXML private Button btnFavorite;
     @FXML private ComboBox<String> comboReadingStatus;
 
-    // Citation controls
     @FXML private ComboBox<CitationService.CitationStyle> comboCitationStyle;
     @FXML private TextArea txtCitation;
     @FXML private Label lblCitationFeedback;
 
-    // Notes controls
     @FXML private ListView<String> notesList;
     @FXML private TextField noteInput;
 
@@ -84,9 +64,6 @@ public class PaperDetailsController {
         });
     }
 
-    /**
-     * Sets the paper to be displayed in details.
-     */
     public void setPaper(Paper paper) {
         this.currentPaper = paper;
         populateStaticFields();
@@ -95,7 +72,6 @@ public class PaperDetailsController {
         updateCitation();
     }
 
-    /** Fills all immediately available (in-memory) fields on the FX thread. */
     private void populateStaticFields() {
         if (currentPaper == null) return;
         lblPageTitle.setText("Paper Details");
@@ -115,7 +91,6 @@ public class PaperDetailsController {
         }
     }
 
-    /** Loads keywords from DB in a background thread and updates the label. */
     private void loadKeywordsAsync() {
         if (currentPaper == null) return;
         lblKeywords.setText("Loading…");
@@ -174,10 +149,6 @@ public class PaperDetailsController {
         }
     }
 
-    // ================================================================
-    // CITATIONS
-    // ================================================================
-
     @FXML
     private void onCitationStyleChanged() {
         updateCitation();
@@ -208,11 +179,6 @@ public class PaperDetailsController {
         }
     }
 
-    // ================================================================
-    // NOTES
-    // ================================================================
-
-    /** Loads notes from DB in a background thread and updates the ListView. */
     private void loadNotesAsync() {
         if (currentPaper == null) return;
         TaskUtil.run(
@@ -236,7 +202,7 @@ public class PaperDetailsController {
             showAlert("Note cannot be empty.", Alert.AlertType.WARNING);
             return;
         }
-        noteInput.clear(); // give instant feedback
+        noteInput.clear();
         TaskUtil.run(
             (java.util.concurrent.Callable<Void>) () -> {
                 paperService.addNote(currentPaper.getId(), text);
@@ -244,7 +210,7 @@ public class PaperDetailsController {
             },
             ignored -> loadNotesAsync(),
             err -> {
-                noteInput.setText(text); // restore text if save failed
+                noteInput.setText(text);
                 showAlert(err != null ? err.getMessage() : "Failed to add note.", Alert.AlertType.WARNING);
             }
         );

@@ -19,21 +19,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * AddPaperController.java
- *
- * Controls the Add/Edit paper form.
- * Handles:
- *   - New paper creation
- *   - Editing an existing paper (when scene userData is a Paper)
- *   - Importing a .txt file to pre-fill the form
- *   - Validation before saving
- *
- * MULTITHREADING:
- *   - onSave()       — DB insert/update runs in a background thread.
- *   - onImportFile() — File I/O and PDF parsing run in a background thread,
- *                      showing a "Importing…" message so the UI stays live.
- */
 public class AddPaperController {
 
     @FXML private Label     pageTitle;
@@ -48,7 +33,7 @@ public class AddPaperController {
     @FXML private Label     lblSaveStatus;
 
     private final PaperService paperService = new PaperService();
-    private Paper editingPaper = null; // null = new paper, non-null = editing
+    private Paper editingPaper = null;
 
     private static final List<String> CATEGORIES = Arrays.asList(
         "Artificial Intelligence", "Machine Learning", "Computer Vision",
@@ -67,10 +52,6 @@ public class AddPaperController {
         });
     }
 
-    /**
-     * Called by PaperController when editing an existing paper.
-     * Pre-fills all form fields with the paper's current values.
-     */
     public void setPaper(Paper paper) {
         this.editingPaper = paper;
         pageTitle.setText("Edit Paper");
@@ -86,7 +67,6 @@ public class AddPaperController {
 
     @FXML
     private void onSave() {
-        // 1. Read and validate inputs (must happen on FX thread)
         String title        = titleField.getText().trim();
         String authorsText  = authorsField.getText().trim();
         String yearText     = yearField.getText().trim();
@@ -113,7 +93,6 @@ public class AddPaperController {
             }
         }
 
-        // 2. Build the Paper object (still on FX thread before dispatching)
         Paper paper = (editingPaper != null) ? editingPaper : new Paper();
         paper.setTitle(title);
         paper.setAuthors(authorsText);
@@ -128,7 +107,6 @@ public class AddPaperController {
 
         final boolean isNew = (editingPaper == null);
 
-        // 3. Dispatch DB write to background thread
         TaskUtil.run(
             () -> {
                 if (isNew) {
@@ -167,13 +145,12 @@ public class AddPaperController {
         );
 
         File file = fc.showOpenDialog(titleField.getScene().getWindow());
-        if (file == null) return; // user cancelled
+        if (file == null) return;
 
         String fileName = file.getName().toLowerCase();
         setStatus("Importing…");
 
         if (fileName.endsWith(".pdf")) {
-            // PDF import: file I/O + PDFBox extraction run in background
             TaskUtil.run(
                 () -> paperService.importPaperFromPdf(file),
                 imported -> {
@@ -199,7 +176,6 @@ public class AddPaperController {
                 }
             );
         } else {
-            // Plain-text import: file parsing is fast but still off FX thread
             TaskUtil.run(
                 () -> FileUtil.parseFromFile(file.getAbsolutePath()),
                 parsed -> {

@@ -7,19 +7,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * NoteDAO.java - All database operations for the 'notes' table.
- *
- * Notes are user-written comments attached to a specific paper.
- * Each note has a creation timestamp stored as a TEXT string.
- */
 public class NoteDAO {
 
-    /**
-     * Saves a new note to the database.
-     *
-     * @param note  Note object (must have paperId, note text, and createdAt set)
-     */
     public void addNote(Note note) {
         String sql = "INSERT INTO notes (paper_id, note, created_at) VALUES (?, ?, ?)";
 
@@ -31,7 +20,6 @@ public class NoteDAO {
             ps.setString(3, note.getCreatedAt());
             ps.executeUpdate();
 
-            // Capture the auto-generated id
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     note.setId(keys.getInt(1));
@@ -43,12 +31,6 @@ public class NoteDAO {
         }
     }
 
-    /**
-     * Returns all notes for a specific paper, ordered oldest first.
-     *
-     * @param paperId  The paper's id
-     * @return         List of Note objects
-     */
     public List<Note> getNotesByPaperId(int paperId) {
         String sql = "SELECT * FROM notes WHERE paper_id = ? ORDER BY id ASC";
         List<Note> results = new ArrayList<>();
@@ -76,11 +58,6 @@ public class NoteDAO {
         return results;
     }
 
-    /**
-     * Deletes a specific note by its id.
-     *
-     * @param noteId  The note to delete
-     */
     public void deleteNote(int noteId) {
         String sql = "DELETE FROM notes WHERE id = ?";
 
@@ -95,9 +72,6 @@ public class NoteDAO {
         }
     }
 
-    /**
-     * Returns the total count of notes across all papers.
-     */
     public int countNotes() {
         String sql = "SELECT COUNT(*) FROM notes";
         try (Connection conn = Database.getConnection();

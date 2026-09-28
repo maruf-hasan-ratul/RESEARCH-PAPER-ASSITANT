@@ -10,20 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * KeywordDAO.java - All database operations for the 'keywords' table.
- *
- * Each keyword is linked to a paper via paper_id (foreign key).
- * Deleting a paper deletes associated keywords via ON DELETE CASCADE.
- */
 public class KeywordDAO {
 
-    /**
-     * Inserts a list of keywords for a given paper.
-     *
-     * @param paperId  The id of the paper
-     * @param keywords List of keyword strings
-     */
     public void addKeywords(int paperId, List<String> keywords) {
         if (keywords == null || keywords.isEmpty()) return;
 
@@ -46,12 +34,6 @@ public class KeywordDAO {
         }
     }
 
-    /**
-     * Retrieves all keywords for a paper as a list of strings.
-     *
-     * @param paperId The id of the paper
-     * @return List of keyword strings
-     */
     public List<String> getKeywordStringsByPaperId(int paperId) {
         String sql = "SELECT keyword FROM keywords WHERE paper_id = ? ORDER BY id ASC";
         List<String> results = new ArrayList<>();
@@ -74,12 +56,6 @@ public class KeywordDAO {
         return results;
     }
 
-    /**
-     * Retrieves all keywords for a paper as Keyword model objects.
-     *
-     * @param paperId The id of the paper
-     * @return List of Keyword model objects
-     */
     public List<Keyword> getKeywordsByPaperId(int paperId) {
         String sql = "SELECT id, paper_id, keyword FROM keywords WHERE paper_id = ? ORDER BY id ASC";
         List<Keyword> results = new ArrayList<>();
@@ -106,11 +82,6 @@ public class KeywordDAO {
         return results;
     }
 
-    /**
-     * Deletes all keywords associated with a specific paper.
-     *
-     * @param paperId The paper id
-     */
     public void deleteKeywordsByPaperId(int paperId) {
         String sql = "DELETE FROM keywords WHERE paper_id = ?";
 

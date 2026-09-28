@@ -21,24 +21,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DashboardController.java
- *
- * Controls the research dashboard screen:
- *   - Overview statistics (total papers, notes, favorites, reading status breakdown)
- *   - Topic category distribution (JavaFX PieChart)
- *   - Most common keywords ranking (ListView)
- *   - Recent papers library table
- *   - Quick navigation shortcuts
- *
- * MULTITHREADING:
- *   All DB-heavy operations (stats, charts, keywords, recent papers) are
- *   dispatched to background daemon threads via TaskUtil so the UI never
- *   freezes during initialize().
- */
 public class DashboardController {
 
-    // Metrics cards
     @FXML private Label lblTotalPapers;
     @FXML private Label lblTotalNotes;
     @FXML private Label lblFavorites;
@@ -48,11 +32,9 @@ public class DashboardController {
     @FXML private Label lblCategories;
     @FXML private Label lblAnalysed;
 
-    // Charts & rankings
     @FXML private PieChart categoryChart;
     @FXML private ListView<String> topKeywordsList;
 
-    // Recent papers table
     @FXML private TableView<Paper>           recentPapersTable;
     @FXML private TableColumn<Paper,String>  colFavorite;
     @FXML private TableColumn<Paper,String>  colTitle;
@@ -66,8 +48,6 @@ public class DashboardController {
     @FXML
     public void initialize() {
         setupTableColumns();
-
-        // Kick off all data loads concurrently in background threads
         loadStatsAsync();
         loadRecentPapersAsync();
         loadChartsAsync();
@@ -101,11 +81,6 @@ public class DashboardController {
         }
     }
 
-    // ----------------------------------------------------------------
-    // Async data loaders — each runs its DB call off the FX thread
-    // ----------------------------------------------------------------
-
-    /** Loads all 8 stat counts concurrently and updates labels on the FX thread. */
     private void loadStatsAsync() {
         TaskUtil.run(
             () -> new int[]{
@@ -132,7 +107,6 @@ public class DashboardController {
         );
     }
 
-    /** Loads the 8 most recent papers into the table. */
     private void loadRecentPapersAsync() {
         TaskUtil.run(
             () -> paperService.getRecentPapers(8),
@@ -141,7 +115,6 @@ public class DashboardController {
         );
     }
 
-    /** Loads category statistics and populates the PieChart. */
     private void loadChartsAsync() {
         if (categoryChart == null) return;
         TaskUtil.run(
@@ -159,7 +132,6 @@ public class DashboardController {
         );
     }
 
-    /** Loads top 10 keywords and populates the ListView. */
     private void loadTopKeywordsAsync() {
         if (topKeywordsList == null) return;
         TaskUtil.run(
@@ -177,7 +149,6 @@ public class DashboardController {
         );
     }
 
-    // ---- Quick action buttons ----
     @FXML private void onViewAllPapers() { navigateTo("papers.fxml"); }
     @FXML private void onViewFavorites() { navigateTo("favorites.fxml"); }
     @FXML private void onCompare()       { navigateTo("comparison.fxml"); }

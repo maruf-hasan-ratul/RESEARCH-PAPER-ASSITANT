@@ -17,16 +17,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * PaperController.java
- * Controls the "Papers" list screen.
- * Shows a TableView of all papers, with Add/Edit/Delete/View/Analyse buttons.
- *
- * MULTITHREADING:
- *   - Initial paper load runs in a background thread (loadAllPapersAsync).
- *   - Quick search also runs off the UI thread to keep the table responsive.
- *   - Delete confirmation dialog remains on the FX thread (required by JavaFX).
- */
 public class PaperController {
 
     @FXML private TextField  searchField;
@@ -49,7 +39,6 @@ public class PaperController {
         setupColumns();
         loadAllPapersAsync();
 
-        // Double-click a row to view details
         papersTable.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2 && getSelected() != null) {
                 onView();
@@ -80,7 +69,6 @@ public class PaperController {
             new SimpleStringProperty(c.getValue().getCreatedAt()));
     }
 
-    /** Load all papers off the FX thread; update table and status label on completion. */
     private void loadAllPapersAsync() {
         lblStatus.setText("Loading…");
         TaskUtil.run(
@@ -123,7 +111,6 @@ public class PaperController {
     private void onView() {
         Paper p = getSelected();
         if (p == null) { showAlert("Select a paper first.", Alert.AlertType.WARNING); return; }
-        // Pass selected paper to details controller via scene userData
         papersTable.getScene().setUserData(p);
         navigateTo("paper-details.fxml");
     }
@@ -149,7 +136,6 @@ public class PaperController {
         Paper p = getSelected();
         if (p == null) { showAlert("Select a paper to delete.", Alert.AlertType.WARNING); return; }
 
-        // Confirmation dialog must stay on the FX thread
         Optional<ButtonType> result = new Alert(Alert.AlertType.CONFIRMATION,
             "Delete paper:\n\"" + p.getTitle() + "\"?\n\nThis also deletes keywords and notes.",
             ButtonType.YES, ButtonType.NO).showAndWait();

@@ -23,17 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * AnalysisController.java
- *
- * Controls the Analysis screen.
- * Supports Local Ollama (Qwen 2.5 3B) LLM synthesis with algorithmic NLP fallback.
- *
- * KEY FEATURE: multithreading
- * When the user clicks "Analyse", we create an AnalysisTask (extends Task)
- * and run it in a background thread. This keeps the UI responsive.
- * Progress and status are bound to ProgressBar and Label automatically.
- */
 public class AnalysisController {
 
     @FXML private ComboBox<Paper>  paperCombo;
@@ -47,7 +36,6 @@ public class AnalysisController {
     @FXML private ComboBox<Paper>  compareCombo;
     @FXML private Label            lblSimilarity;
 
-    // Ollama AI controls
     @FXML private CheckBox         chkUseOllama;
     @FXML private Label            lblAiStatus;
     @FXML private Label            lblSummaryBadge;
@@ -65,11 +53,6 @@ public class AnalysisController {
         loadPapersAsync();
     }
 
-    /**
-     * Loads papers from the DB in a background thread, then populates both
-     * combo boxes on the FX thread.  After population, applies any pre-selected
-     * paper that was passed via scene userData (e.g. from the Papers screen).
-     */
     private void loadPapersAsync() {
         TaskUtil.run(
             () -> paperService.getAllPapers(),
@@ -86,7 +69,6 @@ public class AnalysisController {
                 paperCombo.setConverter(converter);
                 compareCombo.setConverter(converter);
 
-                // Apply pre-selected paper from scene userData (if any)
                 if (paperCombo.getScene() != null) {
                     Object userData = paperCombo.getScene().getUserData();
                     if (userData instanceof Paper p) {
@@ -173,29 +155,23 @@ public class AnalysisController {
             return;
         }
 
-        // Reset UI
         clearResults();
         lblStatus.setText("Starting analysis...");
 
         boolean useOllama = chkUseOllama != null && chkUseOllama.isSelected();
 
-        // Create the background task
         AnalysisTask task = new AnalysisTask(selected, useOllama, aiService);
 
-        // Bind progress bar and status label to the task
         progressBar.progressProperty().bind(task.progressProperty());
         lblStatus.textProperty().bind(task.messageProperty());
 
-        // When done: update UI on the JavaFX thread
         task.setOnSucceeded(e -> {
-            // Unbind so we can set values manually
             progressBar.progressProperty().unbind();
             lblStatus.textProperty().unbind();
 
             lastResult = task.getValue();
             displayResults(lastResult);
 
-            // Save keywords and category back to the paper
             paperService.updateKeywords(selected.getId(), lastResult.getKeywords());
             selected.setCategory(lastResult.getCategory());
             paperService.updatePaper(selected);
@@ -207,7 +183,6 @@ public class AnalysisController {
             lblStatus.setText("Analysis failed: " + task.getException().getMessage());
         });
 
-        // Run in a new daemon thread
         Thread thread = new Thread(task);
         thread.setDaemon(true);
         thread.start();

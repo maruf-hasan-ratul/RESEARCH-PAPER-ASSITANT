@@ -9,27 +9,10 @@ import javafx.scene.layout.StackPane;
 import java.io.IOException;
 import java.net.URL;
 
-/**
- * MainController.java - Controls the main window navigation.
- *
- * WHAT IT DOES:
- * The main window has a sidebar with navigation buttons.
- * When a button is clicked, this controller loads the
- * corresponding FXML file into the center "contentArea".
- *
- * This is called "Single Page Application" style:
- * only one window stays open and the center content changes.
- *
- * HOW FXML LOADING WORKS:
- *   FXMLLoader.load(url) reads an FXML file and creates
- *   the JavaFX Node tree described in it.
- *   We then set that node as the content of our StackPane.
- */
 public class MainController {
 
-    @FXML private StackPane contentArea;  // The center area where screens are loaded
+    @FXML private StackPane contentArea;
 
-    // Sidebar navigation buttons (so we can update which one looks "active")
     @FXML private Button btnDashboard;
     @FXML private Button btnPapers;
     @FXML private Button btnAddPaper;
@@ -39,18 +22,10 @@ public class MainController {
     @FXML private Button btnCompare;
     @FXML private Button btnReports;
 
-    /**
-     * initialize() is called automatically by JavaFX after the FXML is loaded.
-     * We load the dashboard as the default starting screen.
-     */
     @FXML
     public void initialize() {
         showDashboard();
     }
-
-    // ================================================================
-    // NAVIGATION METHODS (called by FXML onAction attributes)
-    // ================================================================
 
     @FXML
     public void showDashboard() {
@@ -100,15 +75,6 @@ public class MainController {
         setActive(btnReports);
     }
 
-    // ================================================================
-    // PRIVATE HELPERS
-    // ================================================================
-
-    /**
-     * Loads an FXML file into the contentArea StackPane.
-     *
-     * @param fxmlFile  Filename (e.g. "dashboard.fxml")
-     */
     private void loadView(String fxmlFile) {
         try {
             URL location = getClass().getResource("/com/example/research_project/fxml/" + fxmlFile);
@@ -120,17 +86,13 @@ public class MainController {
                 return;
             }
             Node view = FXMLLoader.load(location);
-            contentArea.getChildren().setAll(view); // replace current content
+            contentArea.getChildren().setAll(view);
         } catch (IOException e) {
             System.err.println("Failed to load " + fxmlFile + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    /**
-     * Updates sidebar navigation buttons to highlight the active screen.
-     * Applies vibrant active style to the selected button and neutral style to others.
-     */
     private void setActive(Button selected) {
         Button[] allButtons = {btnDashboard, btnPapers, btnAddPaper, btnAnalysis, btnSearch,
                                btnFavorites, btnCompare, btnReports};
