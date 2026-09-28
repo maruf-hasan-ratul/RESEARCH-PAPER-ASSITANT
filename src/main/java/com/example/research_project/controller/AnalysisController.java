@@ -9,6 +9,7 @@ import com.example.research_project.service.SimilarityService;
 import com.example.research_project.task.AnalysisTask;
 import com.example.research_project.util.FileUtil;
 import com.example.research_project.util.JsonUtil;
+import com.example.research_project.util.TaskUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -60,38 +61,47 @@ public class AnalysisController {
 
     @FXML
     public void initialize() {
-        loadPapers();
         refreshAiStatus();
+        loadPapersAsync();
+    }
 
-        // Check if a paper was pre-selected (from Papers screen)
-        Platform.runLater(() -> {
-            if (paperCombo.getScene() != null) {
-                Object userData = paperCombo.getScene().getUserData();
-                if (userData instanceof Paper p) {
-                    for (Paper item : paperCombo.getItems()) {
-                        if (item.getId() == p.getId()) {
-                            paperCombo.setValue(item);
-                            break;
+    /**
+     * Loads papers from the DB in a background thread, then populates both
+     * combo boxes on the FX thread.  After population, applies any pre-selected
+     * paper that was passed via scene userData (e.g. from the Papers screen).
+     */
+    private void loadPapersAsync() {
+        TaskUtil.run(
+            () -> paperService.getAllPapers(),
+            papers -> {
+                javafx.util.StringConverter<Paper> converter = new javafx.util.StringConverter<>() {
+                    @Override public String toString(Paper p) {
+                        return p == null ? "" : "[" + p.getId() + "] " + p.getTitle();
+                    }
+                    @Override public Paper fromString(String s) { return null; }
+                };
+
+                paperCombo.setItems(FXCollections.observableArrayList(papers));
+                compareCombo.setItems(FXCollections.observableArrayList(papers));
+                paperCombo.setConverter(converter);
+                compareCombo.setConverter(converter);
+
+                // Apply pre-selected paper from scene userData (if any)
+                if (paperCombo.getScene() != null) {
+                    Object userData = paperCombo.getScene().getUserData();
+                    if (userData instanceof Paper p) {
+                        for (Paper item : papers) {
+                            if (item.getId() == p.getId()) {
+                                paperCombo.setValue(item);
+                                break;
+                            }
                         }
                     }
                 }
-            }
-        });
-    }
-
-    private void loadPapers() {
-        List<Paper> papers = paperService.getAllPapers();
-        paperCombo.setItems(FXCollections.observableArrayList(papers));
-        compareCombo.setItems(FXCollections.observableArrayList(papers));
-
-        // Show title in combo boxes
-        paperCombo.setConverter(new javafx.util.StringConverter<>() {
-            @Override public String toString(Paper p) {
-                return p == null ? "" : "[" + p.getId() + "] " + p.getTitle();
-            }
-            @Override public Paper fromString(String s) { return null; }
-        });
-        compareCombo.setConverter(paperCombo.getConverter());
+            },
+            err -> System.err.println("AnalysisController loadPapers error: " +
+                    (err != null ? err.getMessage() : "?"))
+        );
     }
 
     private void refreshAiStatus() {

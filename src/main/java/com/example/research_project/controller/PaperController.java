@@ -2,10 +2,10 @@ package com.example.research_project.controller;
 
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.PaperService;
+import com.example.research_project.util.TaskUtil;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -21,6 +21,11 @@ import java.util.Optional;
  * PaperController.java
  * Controls the "Papers" list screen.
  * Shows a TableView of all papers, with Add/Edit/Delete/View/Analyse buttons.
+ *
+ * MULTITHREADING:
+ *   - Initial paper load runs in a background thread (loadAllPapersAsync).
+ *   - Quick search also runs off the UI thread to keep the table responsive.
+ *   - Delete confirmation dialog remains on the FX thread (required by JavaFX).
  */
 public class PaperController {
 
@@ -42,7 +47,7 @@ public class PaperController {
     @FXML
     public void initialize() {
         setupColumns();
-        loadAllPapers();
+        loadAllPapersAsync();
 
         // Double-click a row to view details
         papersTable.setOnMouseClicked(e -> {
@@ -75,24 +80,37 @@ public class PaperController {
             new SimpleStringProperty(c.getValue().getCreatedAt()));
     }
 
-    private void loadAllPapers() {
-        List<Paper> papers = paperService.getAllPapers();
-        papersTable.setItems(FXCollections.observableArrayList(papers));
-        lblStatus.setText(papers.size() + " paper(s) found.");
+    /** Load all papers off the FX thread; update table and status label on completion. */
+    private void loadAllPapersAsync() {
+        lblStatus.setText("Loading…");
+        TaskUtil.run(
+            () -> paperService.getAllPapers(),
+            papers -> {
+                papersTable.setItems(FXCollections.observableArrayList(papers));
+                lblStatus.setText(papers.size() + " paper(s) found.");
+            },
+            err -> lblStatus.setText("Failed to load papers.")
+        );
     }
 
     @FXML
     private void onQuickSearch() {
         String term = searchField.getText().trim();
-        List<Paper> results = paperService.searchPapers(term);
-        papersTable.setItems(FXCollections.observableArrayList(results));
-        lblStatus.setText(results.size() + " result(s).");
+        lblStatus.setText("Searching…");
+        TaskUtil.run(
+            () -> paperService.searchPapers(term),
+            results -> {
+                papersTable.setItems(FXCollections.observableArrayList(results));
+                lblStatus.setText(results.size() + " result(s).");
+            },
+            err -> lblStatus.setText("Search failed.")
+        );
     }
 
     @FXML
     private void onRefresh() {
         searchField.clear();
-        loadAllPapers();
+        loadAllPapersAsync();
     }
 
     @FXML
@@ -131,18 +149,25 @@ public class PaperController {
         Paper p = getSelected();
         if (p == null) { showAlert("Select a paper to delete.", Alert.AlertType.WARNING); return; }
 
+        // Confirmation dialog must stay on the FX thread
         Optional<ButtonType> result = new Alert(Alert.AlertType.CONFIRMATION,
             "Delete paper:\n\"" + p.getTitle() + "\"?\n\nThis also deletes keywords and notes.",
             ButtonType.YES, ButtonType.NO).showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.YES) {
-            boolean ok = paperService.deletePaper(p.getId());
-            if (ok) {
-                loadAllPapers();
-                showAlert("Paper deleted.", Alert.AlertType.INFORMATION);
-            } else {
-                showAlert("Delete failed.", Alert.AlertType.ERROR);
-            }
+            lblStatus.setText("Deleting…");
+            TaskUtil.run(
+                () -> paperService.deletePaper(p.getId()),
+                ok -> {
+                    if (ok) {
+                        loadAllPapersAsync();
+                        showAlert("Paper deleted.", Alert.AlertType.INFORMATION);
+                    } else {
+                        showAlert("Delete failed.", Alert.AlertType.ERROR);
+                    }
+                },
+                err -> showAlert("Delete failed: " + (err != null ? err.getMessage() : ""), Alert.AlertType.ERROR)
+            );
         }
     }
 
@@ -154,13 +179,18 @@ public class PaperController {
             return;
         }
         boolean newFav = !p.isFavorite();
-        boolean ok = paperService.setFavorite(p.getId(), newFav);
-        if (ok) {
-            p.setFavorite(newFav);
-            papersTable.refresh();
-        } else {
-            showAlert("Failed to update favorite status.", Alert.AlertType.ERROR);
-        }
+        TaskUtil.run(
+            () -> paperService.setFavorite(p.getId(), newFav),
+            ok -> {
+                if (ok) {
+                    p.setFavorite(newFav);
+                    papersTable.refresh();
+                } else {
+                    showAlert("Failed to update favorite status.", Alert.AlertType.ERROR);
+                }
+            },
+            err -> showAlert("Error updating favorite.", Alert.AlertType.ERROR)
+        );
     }
 
     private Paper getSelected() {

@@ -4,6 +4,7 @@ import com.example.research_project.model.Note;
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.CitationService;
 import com.example.research_project.service.PaperService;
+import com.example.research_project.util.TaskUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -27,6 +28,13 @@ import java.util.List;
  *   - favorite toggle button (☆ / ★)
  *   - reading status dropdown (UNREAD, READING, COMPLETED)
  *   - academic citation generator (IEEE, APA, MLA, BibTeX)
+ *
+ * MULTITHREADING:
+ *   - loadNotesAsync()         — loads notes off the FX thread.
+ *   - loadKeywordsAsync()      — DB keyword lookup off the FX thread.
+ *   - onToggleFavorite()       — DB write off the FX thread.
+ *   - onStatusChanged()        — DB write off the FX thread.
+ *   - onAddNote() / onDeleteNote() — DB writes off the FX thread.
  */
 public class PaperDetailsController {
 
@@ -81,12 +89,14 @@ public class PaperDetailsController {
      */
     public void setPaper(Paper paper) {
         this.currentPaper = paper;
-        populateFields();
-        loadNotes();
+        populateStaticFields();
+        loadKeywordsAsync();
+        loadNotesAsync();
         updateCitation();
     }
 
-    private void populateFields() {
+    /** Fills all immediately available (in-memory) fields on the FX thread. */
+    private void populateStaticFields() {
         if (currentPaper == null) return;
         lblPageTitle.setText("Paper Details");
         lblTitle.setText(nvl(currentPaper.getTitle()));
@@ -98,16 +108,22 @@ public class PaperDetailsController {
         lblMethodology.setText(nvl(currentPaper.getMethodology()));
         lblFindings.setText(nvl(currentPaper.getFindings()));
 
-        // Update Favorite UI
         updateFavoriteButtonState();
 
-        // Update Reading Status
         if (comboReadingStatus != null) {
             comboReadingStatus.setValue(currentPaper.getReadingStatus());
         }
+    }
 
-        List<String> kws = paperService.getKeywordsForPaper(currentPaper.getId());
-        lblKeywords.setText(kws.isEmpty() ? "(none)" : String.join(", ", kws));
+    /** Loads keywords from DB in a background thread and updates the label. */
+    private void loadKeywordsAsync() {
+        if (currentPaper == null) return;
+        lblKeywords.setText("Loading…");
+        TaskUtil.run(
+            () -> paperService.getKeywordsForPaper(currentPaper.getId()),
+            kws -> lblKeywords.setText(kws.isEmpty() ? "(none)" : String.join(", ", kws)),
+            err -> lblKeywords.setText("(error loading keywords)")
+        );
     }
 
     private void updateFavoriteButtonState() {
@@ -125,13 +141,18 @@ public class PaperDetailsController {
     private void onToggleFavorite() {
         if (currentPaper == null) return;
         boolean newFav = !currentPaper.isFavorite();
-        boolean ok = paperService.setFavorite(currentPaper.getId(), newFav);
-        if (ok) {
-            currentPaper.setFavorite(newFav);
-            updateFavoriteButtonState();
-        } else {
-            showAlert("Could not update favorite status.", Alert.AlertType.ERROR);
-        }
+        TaskUtil.run(
+            () -> paperService.setFavorite(currentPaper.getId(), newFav),
+            ok -> {
+                if (ok) {
+                    currentPaper.setFavorite(newFav);
+                    updateFavoriteButtonState();
+                } else {
+                    showAlert("Could not update favorite status.", Alert.AlertType.ERROR);
+                }
+            },
+            err -> showAlert("Error: " + (err != null ? err.getMessage() : "unknown"), Alert.AlertType.ERROR)
+        );
     }
 
     @FXML
@@ -139,12 +160,17 @@ public class PaperDetailsController {
         if (currentPaper == null || comboReadingStatus == null) return;
         String newStatus = comboReadingStatus.getValue();
         if (newStatus != null && !newStatus.equals(currentPaper.getReadingStatus())) {
-            boolean ok = paperService.updateReadingStatus(currentPaper.getId(), newStatus);
-            if (ok) {
-                currentPaper.setReadingStatus(newStatus);
-            } else {
-                showAlert("Could not update reading status.", Alert.AlertType.ERROR);
-            }
+            TaskUtil.run(
+                () -> paperService.updateReadingStatus(currentPaper.getId(), newStatus),
+                ok -> {
+                    if (ok) {
+                        currentPaper.setReadingStatus(newStatus);
+                    } else {
+                        showAlert("Could not update reading status.", Alert.AlertType.ERROR);
+                    }
+                },
+                err -> showAlert("Error: " + (err != null ? err.getMessage() : "unknown"), Alert.AlertType.ERROR)
+            );
         }
     }
 
@@ -186,13 +212,20 @@ public class PaperDetailsController {
     // NOTES
     // ================================================================
 
-    private void loadNotes() {
+    /** Loads notes from DB in a background thread and updates the ListView. */
+    private void loadNotesAsync() {
         if (currentPaper == null) return;
-        List<Note> notes = paperService.getNotesForPaper(currentPaper.getId());
-        List<String> display = notes.stream()
-                .map(n -> "[" + nvl(n.getCreatedAt()) + "]  " + nvl(n.getNote()))
-                .toList();
-        notesList.setItems(FXCollections.observableArrayList(display));
+        TaskUtil.run(
+            () -> paperService.getNotesForPaper(currentPaper.getId()),
+            notes -> {
+                List<String> display = notes.stream()
+                        .map(n -> "[" + nvl(n.getCreatedAt()) + "]  " + nvl(n.getNote()))
+                        .toList();
+                notesList.setItems(FXCollections.observableArrayList(display));
+            },
+            err -> System.err.println("PaperDetailsController loadNotes error: " +
+                    (err != null ? err.getMessage() : "?"))
+        );
     }
 
     @FXML
@@ -203,24 +236,37 @@ public class PaperDetailsController {
             showAlert("Note cannot be empty.", Alert.AlertType.WARNING);
             return;
         }
-        try {
-            paperService.addNote(currentPaper.getId(), text);
-            noteInput.clear();
-            loadNotes();
-        } catch (IllegalArgumentException e) {
-            showAlert(e.getMessage(), Alert.AlertType.WARNING);
-        }
+        noteInput.clear(); // give instant feedback
+        TaskUtil.run(
+            (java.util.concurrent.Callable<Void>) () -> {
+                paperService.addNote(currentPaper.getId(), text);
+                return null;
+            },
+            ignored -> loadNotesAsync(),
+            err -> {
+                noteInput.setText(text); // restore text if save failed
+                showAlert(err != null ? err.getMessage() : "Failed to add note.", Alert.AlertType.WARNING);
+            }
+        );
     }
 
     @FXML
     private void onDeleteNote() {
         int idx = notesList.getSelectionModel().getSelectedIndex();
         if (idx < 0) { showAlert("Select a note to delete.", Alert.AlertType.WARNING); return; }
-        List<Note> notes = paperService.getNotesForPaper(currentPaper.getId());
-        if (idx < notes.size()) {
-            paperService.deleteNote(notes.get(idx).getId());
-            loadNotes();
-        }
+
+        TaskUtil.run(
+            () -> {
+                List<Note> notes = paperService.getNotesForPaper(currentPaper.getId());
+                if (idx < notes.size()) {
+                    paperService.deleteNote(notes.get(idx).getId());
+                }
+                return null;
+            },
+            ignored -> loadNotesAsync(),
+            err -> showAlert("Failed to delete note: " +
+                    (err != null ? err.getMessage() : "unknown"), Alert.AlertType.ERROR)
+        );
     }
 
     @FXML

@@ -2,6 +2,7 @@ package com.example.research_project.controller;
 
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.PaperService;
+import com.example.research_project.util.TaskUtil;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -20,6 +21,11 @@ import java.util.List;
  *
  * Dedicated screen for managing bookmarked / favorite research papers.
  * Allows instant viewing, filtering/searching among favorites, and navigation.
+ *
+ * MULTITHREADING:
+ *   - loadFavorites() runs DB queries in a background thread via TaskUtil.
+ *   - onQuickSearch() filters off the FX thread to keep the table responsive.
+ *   - onRemoveFavorite() performs the DB update in a background thread.
  */
 public class FavoritesController {
 
@@ -41,7 +47,7 @@ public class FavoritesController {
     @FXML
     public void initialize() {
         setupColumns();
-        loadFavorites();
+        loadFavoritesAsync();
 
         papersTable.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2 && getSelected() != null) {
@@ -69,34 +75,46 @@ public class FavoritesController {
                 new SimpleStringProperty(c.getValue().getCreatedAt()));
     }
 
-    private void loadFavorites() {
-        List<Paper> favorites = paperService.getFavoritePapers();
-        papersTable.setItems(FXCollections.observableArrayList(favorites));
-        lblStatus.setText(favorites.size() + " favorite paper(s) bookmarked.");
+    /** Loads favorite papers off the FX thread; updates the table on completion. */
+    private void loadFavoritesAsync() {
+        lblStatus.setText("Loading…");
+        TaskUtil.run(
+            () -> paperService.getFavoritePapers(),
+            favorites -> {
+                papersTable.setItems(FXCollections.observableArrayList(favorites));
+                lblStatus.setText(favorites.size() + " favorite paper(s) bookmarked.");
+            },
+            err -> lblStatus.setText("Failed to load favorites.")
+        );
     }
 
     @FXML
     private void onQuickSearch() {
         String term = searchField.getText().trim().toLowerCase();
         if (term.isEmpty()) {
-            loadFavorites();
+            loadFavoritesAsync();
             return;
         }
 
-        List<Paper> filtered = paperService.getFavoritePapers().stream()
-                .filter(p -> (p.getTitle() != null && p.getTitle().toLowerCase().contains(term)) ||
-                             (p.getAuthors() != null && p.getAuthors().toLowerCase().contains(term)) ||
-                             (p.getCategory() != null && p.getCategory().toLowerCase().contains(term)))
-                .toList();
-
-        papersTable.setItems(FXCollections.observableArrayList(filtered));
-        lblStatus.setText(filtered.size() + " match(es) in favorites.");
+        lblStatus.setText("Searching…");
+        TaskUtil.run(
+            () -> paperService.getFavoritePapers().stream()
+                    .filter(p -> (p.getTitle()    != null && p.getTitle().toLowerCase().contains(term)) ||
+                                 (p.getAuthors()  != null && p.getAuthors().toLowerCase().contains(term)) ||
+                                 (p.getCategory() != null && p.getCategory().toLowerCase().contains(term)))
+                    .toList(),
+            filtered -> {
+                papersTable.setItems(FXCollections.observableArrayList(filtered));
+                lblStatus.setText(filtered.size() + " match(es) in favorites.");
+            },
+            err -> lblStatus.setText("Search failed.")
+        );
     }
 
     @FXML
     private void onRefresh() {
         searchField.clear();
-        loadFavorites();
+        loadFavoritesAsync();
     }
 
     @FXML
@@ -111,12 +129,19 @@ public class FavoritesController {
     private void onRemoveFavorite() {
         Paper p = getSelected();
         if (p == null) { showAlert("Select a paper to remove from favorites.", Alert.AlertType.WARNING); return; }
-        boolean ok = paperService.setFavorite(p.getId(), false);
-        if (ok) {
-            loadFavorites();
-        } else {
-            showAlert("Could not update favorite status.", Alert.AlertType.ERROR);
-        }
+
+        lblStatus.setText("Updating…");
+        TaskUtil.run(
+            () -> paperService.setFavorite(p.getId(), false),
+            ok -> {
+                if (ok) {
+                    loadFavoritesAsync();
+                } else {
+                    showAlert("Could not update favorite status.", Alert.AlertType.ERROR);
+                }
+            },
+            err -> showAlert("Error: " + (err != null ? err.getMessage() : "unknown"), Alert.AlertType.ERROR)
+        );
     }
 
     @FXML

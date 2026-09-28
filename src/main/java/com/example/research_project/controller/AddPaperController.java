@@ -3,6 +3,7 @@ package com.example.research_project.controller;
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.PaperService;
 import com.example.research_project.util.FileUtil;
+import com.example.research_project.util.TaskUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -27,6 +28,11 @@ import java.util.List;
  *   - Editing an existing paper (when scene userData is a Paper)
  *   - Importing a .txt file to pre-fill the form
  *   - Validation before saving
+ *
+ * MULTITHREADING:
+ *   - onSave()       — DB insert/update runs in a background thread.
+ *   - onImportFile() — File I/O and PDF parsing run in a background thread,
+ *                      showing a "Importing…" message so the UI stays live.
  */
 public class AddPaperController {
 
@@ -39,6 +45,7 @@ public class AddPaperController {
     @FXML private TextArea  abstractArea;
     @FXML private TextArea  methodologyArea;
     @FXML private TextArea  findingsArea;
+    @FXML private Label     lblSaveStatus;
 
     private final PaperService paperService = new PaperService();
     private Paper editingPaper = null; // null = new paper, non-null = editing
@@ -79,15 +86,15 @@ public class AddPaperController {
 
     @FXML
     private void onSave() {
-        // 1. Read and validate inputs
-        String title = titleField.getText().trim();
-        String authorsText = authorsField.getText().trim();
-        String yearText = yearField.getText().trim();
-        String category = categoryCombo.getValue();
-        String source = sourceField.getText().trim();
+        // 1. Read and validate inputs (must happen on FX thread)
+        String title        = titleField.getText().trim();
+        String authorsText  = authorsField.getText().trim();
+        String yearText     = yearField.getText().trim();
+        String category     = categoryCombo.getValue();
+        String source       = sourceField.getText().trim();
         String abstractText = abstractArea.getText().trim();
-        String methodology = methodologyArea.getText().trim();
-        String findings = findingsArea.getText().trim();
+        String methodology  = methodologyArea.getText().trim();
+        String findings     = findingsArea.getText().trim();
 
         if (title.isEmpty()) {
             showAlert("Title cannot be empty.", Alert.AlertType.WARNING);
@@ -106,7 +113,7 @@ public class AddPaperController {
             }
         }
 
-        // 2. Build the Paper object
+        // 2. Build the Paper object (still on FX thread before dispatching)
         Paper paper = (editingPaper != null) ? editingPaper : new Paper();
         paper.setTitle(title);
         paper.setAuthors(authorsText);
@@ -117,29 +124,36 @@ public class AddPaperController {
         paper.setMethodology(methodology);
         paper.setFindings(findings);
 
-        try {
-            // 3. Save or update
-            if (editingPaper == null) {
-                int newId = paperService.addPaper(paper);
-                if (newId > 0) {
-                    showAlert("Paper saved! (ID: " + newId + ")", Alert.AlertType.INFORMATION);
-                    onClear();
+        setStatus("Saving…");
+
+        final boolean isNew = (editingPaper == null);
+
+        // 3. Dispatch DB write to background thread
+        TaskUtil.run(
+            () -> {
+                if (isNew) {
+                    return paperService.addPaper(paper);
+                } else {
+                    return paperService.updatePaper(paper) ? paper.getId() : -1;
+                }
+            },
+            resultId -> {
+                if (resultId > 0) {
+                    setStatus(isNew ? "Saved (ID: " + resultId + ")." : "Updated successfully.");
+                    showAlert(isNew ? "Paper saved! (ID: " + resultId + ")" : "Paper updated successfully.",
+                            Alert.AlertType.INFORMATION);
+                    if (isNew) onClear();
                     navigateTo("papers.fxml");
                 } else {
-                    showAlert("Failed to save paper.", Alert.AlertType.ERROR);
+                    setStatus("Save failed.");
+                    showAlert(isNew ? "Failed to save paper." : "Update failed.", Alert.AlertType.ERROR);
                 }
-            } else {
-                boolean ok = paperService.updatePaper(paper);
-                if (ok) {
-                    showAlert("Paper updated successfully.", Alert.AlertType.INFORMATION);
-                    navigateTo("papers.fxml");
-                } else {
-                    showAlert("Update failed.", Alert.AlertType.ERROR);
-                }
+            },
+            err -> {
+                setStatus("Save failed.");
+                showAlert(err != null ? err.getMessage() : "Save failed.", Alert.AlertType.ERROR);
             }
-        } catch (IllegalArgumentException e) {
-            showAlert(e.getMessage(), Alert.AlertType.WARNING);
-        }
+        );
     }
 
     @FXML
@@ -156,44 +170,59 @@ public class AddPaperController {
         if (file == null) return; // user cancelled
 
         String fileName = file.getName().toLowerCase();
+        setStatus("Importing…");
 
         if (fileName.endsWith(".pdf")) {
-            // Import from PDF using PaperService (extracts text, metadata, keywords)
-            try {
-                Paper imported = paperService.importPaperFromPdf(file);
-                // Pre-fill the form from the imported paper (already saved to DB)
-                if (imported.getTitle()        != null) titleField.setText(imported.getTitle());
-                if (imported.getAuthors()      != null) authorsField.setText(imported.getAuthors());
-                if (imported.getYear()         > 0)     yearField.setText(String.valueOf(imported.getYear()));
-                if (imported.getCategory()     != null) categoryCombo.setValue(imported.getCategory());
-                if (imported.getSource()       != null) sourceField.setText(imported.getSource());
-                if (imported.getAbstractText() != null) abstractArea.setText(imported.getAbstractText());
-                if (imported.getMethodology()  != null) methodologyArea.setText(imported.getMethodology());
-                if (imported.getFindings()     != null) findingsArea.setText(imported.getFindings());
+            // PDF import: file I/O + PDFBox extraction run in background
+            TaskUtil.run(
+                () -> paperService.importPaperFromPdf(file),
+                imported -> {
+                    if (imported.getTitle()        != null) titleField.setText(imported.getTitle());
+                    if (imported.getAuthors()      != null) authorsField.setText(imported.getAuthors());
+                    if (imported.getYear()         > 0)     yearField.setText(String.valueOf(imported.getYear()));
+                    if (imported.getCategory()     != null) categoryCombo.setValue(imported.getCategory());
+                    if (imported.getSource()       != null) sourceField.setText(imported.getSource());
+                    if (imported.getAbstractText() != null) abstractArea.setText(imported.getAbstractText());
+                    if (imported.getMethodology()  != null) methodologyArea.setText(imported.getMethodology());
+                    if (imported.getFindings()     != null) findingsArea.setText(imported.getFindings());
 
-                // Mark as an edit so we update, not insert a duplicate
-                editingPaper = imported;
-                pageTitle.setText("Edit Paper (Imported from PDF)");
-                showAlert("PDF imported and saved! (ID: " + imported.getId() + ")\n" +
-                          "Review the fields and click Save to confirm.", Alert.AlertType.INFORMATION);
-            } catch (IOException e) {
-                showAlert("Could not read PDF file: " + e.getMessage(), Alert.AlertType.ERROR);
-            }
+                    editingPaper = imported;
+                    pageTitle.setText("Edit Paper (Imported from PDF)");
+                    setStatus("PDF imported (ID: " + imported.getId() + ").");
+                    showAlert("PDF imported and saved! (ID: " + imported.getId() + ")\n" +
+                              "Review the fields and click Save to confirm.", Alert.AlertType.INFORMATION);
+                },
+                err -> {
+                    setStatus("Import failed.");
+                    showAlert("Could not read PDF file: " + (err != null ? err.getMessage() : "unknown"),
+                            Alert.AlertType.ERROR);
+                }
+            );
         } else {
-            // Import from plain-text file
-            Paper parsed = FileUtil.parseFromFile(file.getAbsolutePath());
-            if (parsed == null) {
-                showAlert("Could not parse file. Make sure it follows the expected format.", Alert.AlertType.WARNING);
-                return;
-            }
-
-            // Pre-fill the form
-            if (parsed.getTitle()        != null) titleField.setText(parsed.getTitle());
-            if (parsed.getAuthors()      != null) authorsField.setText(parsed.getAuthors());
-            if (parsed.getYear()         > 0)     yearField.setText(String.valueOf(parsed.getYear()));
-            if (parsed.getAbstractText() != null) abstractArea.setText(parsed.getAbstractText());
-            if (parsed.getMethodology()  != null) methodologyArea.setText(parsed.getMethodology());
-            if (parsed.getFindings()     != null) findingsArea.setText(parsed.getFindings());
+            // Plain-text import: file parsing is fast but still off FX thread
+            TaskUtil.run(
+                () -> FileUtil.parseFromFile(file.getAbsolutePath()),
+                parsed -> {
+                    if (parsed == null) {
+                        setStatus("Import failed.");
+                        showAlert("Could not parse file. Make sure it follows the expected format.",
+                                Alert.AlertType.WARNING);
+                        return;
+                    }
+                    if (parsed.getTitle()        != null) titleField.setText(parsed.getTitle());
+                    if (parsed.getAuthors()      != null) authorsField.setText(parsed.getAuthors());
+                    if (parsed.getYear()         > 0)     yearField.setText(String.valueOf(parsed.getYear()));
+                    if (parsed.getAbstractText() != null) abstractArea.setText(parsed.getAbstractText());
+                    if (parsed.getMethodology()  != null) methodologyArea.setText(parsed.getMethodology());
+                    if (parsed.getFindings()     != null) findingsArea.setText(parsed.getFindings());
+                    setStatus("File imported.");
+                },
+                err -> {
+                    setStatus("Import failed.");
+                    showAlert("Import error: " + (err != null ? err.getMessage() : "unknown"),
+                            Alert.AlertType.ERROR);
+                }
+            );
         }
     }
 
@@ -209,11 +238,16 @@ public class AddPaperController {
         abstractArea.clear();
         methodologyArea.clear();
         findingsArea.clear();
+        setStatus("");
     }
 
     @FXML
     private void onCancel() {
         navigateTo("papers.fxml");
+    }
+
+    private void setStatus(String msg) {
+        if (lblSaveStatus != null) lblSaveStatus.setText(msg);
     }
 
     private void navigateTo(String fxml) {

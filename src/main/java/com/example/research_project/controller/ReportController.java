@@ -3,6 +3,7 @@ package com.example.research_project.controller;
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.PaperService;
 import com.example.research_project.service.ResearchReportService;
+import com.example.research_project.util.TaskUtil;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -26,6 +27,13 @@ import java.util.List;
  * research analysis reports with summary statistics, topic distribution,
  * common keywords, similarity matrix, and citations.
  * Reports can be previewed directly and exported as publication-ready PDFs.
+ *
+ * MULTITHREADING:
+ *   - loadPapersAsync() fetches papers off the FX thread.
+ *   - onGenerateReport() runs the (potentially slow) report text generation in a
+ *     background thread, showing "Generating report…" feedback while it runs.
+ *   - onExportPdf() runs the PDFBox rendering pipeline in a background thread so
+ *     the UI stays responsive even for large, multi-paper exports.
  */
 public class ReportController {
 
@@ -34,30 +42,31 @@ public class ReportController {
         private final BooleanProperty selected;
 
         public SelectablePaper(Paper paper, boolean isSelected) {
-            this.paper = paper;
+            this.paper    = paper;
             this.selected = new SimpleBooleanProperty(isSelected);
         }
 
-        public Paper getPaper() { return paper; }
-        public BooleanProperty selectedProperty() { return selected; }
-        public boolean isSelected() { return selected.get(); }
-        public void setSelected(boolean val) { selected.set(val); }
+        public Paper getPaper()                    { return paper; }
+        public BooleanProperty selectedProperty()  { return selected; }
+        public boolean isSelected()                { return selected.get(); }
+        public void setSelected(boolean val)       { selected.set(val); }
     }
 
-    @FXML private TableView<SelectablePaper> papersSelectionTable;
-    @FXML private TableColumn<SelectablePaper, Boolean> colSelect;
-    @FXML private TableColumn<SelectablePaper, Integer> colId;
-    @FXML private TableColumn<SelectablePaper, String> colTitle;
-    @FXML private TableColumn<SelectablePaper, String> colAuthors;
-    @FXML private TableColumn<SelectablePaper, Integer> colYear;
-    @FXML private TableColumn<SelectablePaper, String> colCategory;
-    @FXML private TableColumn<SelectablePaper, String> colStatus;
+    @FXML private TableView<SelectablePaper>          papersSelectionTable;
+    @FXML private TableColumn<SelectablePaper, Boolean>  colSelect;
+    @FXML private TableColumn<SelectablePaper, Integer>  colId;
+    @FXML private TableColumn<SelectablePaper, String>   colTitle;
+    @FXML private TableColumn<SelectablePaper, String>   colAuthors;
+    @FXML private TableColumn<SelectablePaper, Integer>  colYear;
+    @FXML private TableColumn<SelectablePaper, String>   colCategory;
+    @FXML private TableColumn<SelectablePaper, String>   colStatus;
 
     @FXML private TextArea txtReportPreview;
-    @FXML private Label lblSelectionSummary;
-    @FXML private Button btnExportPdf;
+    @FXML private Label    lblSelectionSummary;
+    @FXML private Button   btnExportPdf;
+    @FXML private Label    lblReportStatus;
 
-    private final PaperService paperService = new PaperService();
+    private final PaperService          paperService  = new PaperService();
     private final ResearchReportService reportService = new ResearchReportService();
 
     private final ObservableList<SelectablePaper> selectablePapers = FXCollections.observableArrayList();
@@ -65,7 +74,7 @@ public class ReportController {
     @FXML
     public void initialize() {
         setupTable();
-        loadPapers();
+        loadPapersAsync();
     }
 
     private void setupTable() {
@@ -91,34 +100,41 @@ public class ReportController {
         papersSelectionTable.setItems(selectablePapers);
     }
 
-    private void loadPapers() {
-        selectablePapers.clear();
-        List<Paper> all = paperService.getAllPapers();
-        for (Paper p : all) {
-            selectablePapers.add(new SelectablePaper(p, true));
-        }
-        updateSelectionCount();
+    /** Loads all papers into the selection table in a background thread. */
+    private void loadPapersAsync() {
+        if (lblSelectionSummary != null) lblSelectionSummary.setText("Loading papers…");
+        TaskUtil.run(
+            () -> paperService.getAllPapers(),
+            all -> {
+                selectablePapers.clear();
+                for (Paper p : all) {
+                    selectablePapers.add(new SelectablePaper(p, true));
+                }
+                updateSelectionCount();
+            },
+            err -> {
+                if (lblSelectionSummary != null)
+                    lblSelectionSummary.setText("Failed to load papers.");
+            }
+        );
     }
 
     private void updateSelectionCount() {
         long count = selectablePapers.stream().filter(SelectablePaper::isSelected).count();
-        lblSelectionSummary.setText(count + " of " + selectablePapers.size() + " papers selected");
+        if (lblSelectionSummary != null)
+            lblSelectionSummary.setText(count + " of " + selectablePapers.size() + " papers selected");
     }
 
     @FXML
     private void onSelectAll() {
-        for (SelectablePaper sp : selectablePapers) {
-            sp.setSelected(true);
-        }
+        for (SelectablePaper sp : selectablePapers) sp.setSelected(true);
         papersSelectionTable.refresh();
         updateSelectionCount();
     }
 
     @FXML
     private void onDeselectAll() {
-        for (SelectablePaper sp : selectablePapers) {
-            sp.setSelected(false);
-        }
+        for (SelectablePaper sp : selectablePapers) sp.setSelected(false);
         papersSelectionTable.refresh();
         updateSelectionCount();
     }
@@ -126,13 +142,15 @@ public class ReportController {
     private List<Paper> getSelectedPapers() {
         List<Paper> list = new ArrayList<>();
         for (SelectablePaper sp : selectablePapers) {
-            if (sp.isSelected()) {
-                list.add(sp.getPaper());
-            }
+            if (sp.isSelected()) list.add(sp.getPaper());
         }
         return list;
     }
 
+    /**
+     * Generates the text report in a background thread (involves DB lookups +
+     * pairwise similarity computation which can be slow for many papers).
+     */
     @FXML
     private void onGenerateReport() {
         List<Paper> selected = getSelectedPapers();
@@ -142,11 +160,28 @@ public class ReportController {
         }
 
         updateSelectionCount();
-        String report = reportService.generateTextReport(selected);
-        txtReportPreview.setText(report);
-        btnExportPdf.setDisable(false);
+        if (lblReportStatus != null) lblReportStatus.setText("Generating report…");
+        txtReportPreview.setText("");
+        btnExportPdf.setDisable(true);
+
+        TaskUtil.run(
+            () -> reportService.generateTextReport(selected),
+            report -> {
+                txtReportPreview.setText(report);
+                btnExportPdf.setDisable(false);
+                if (lblReportStatus != null) lblReportStatus.setText("Report ready.");
+            },
+            err -> {
+                if (lblReportStatus != null) lblReportStatus.setText("Report generation failed.");
+                showAlert("Failed to generate report: " + (err != null ? err.getMessage() : "unknown"),
+                        Alert.AlertType.ERROR);
+            }
+        );
     }
 
+    /**
+     * Exports the PDF in a background thread so PDFBox rendering doesn't freeze the UI.
+     */
     @FXML
     private void onExportPdf() {
         List<Paper> selected = getSelectedPapers();
@@ -163,13 +198,27 @@ public class ReportController {
         File file = fc.showSaveDialog(txtReportPreview.getScene().getWindow());
         if (file == null) return;
 
-        try {
-            reportService.exportPdfReport(selected, file);
-            showAlert("Research report exported successfully to:\n" + file.getAbsolutePath(), Alert.AlertType.INFORMATION);
-        } catch (IOException e) {
-            showAlert("Failed to export PDF: " + e.getMessage(), Alert.AlertType.ERROR);
-            e.printStackTrace();
-        }
+        if (lblReportStatus != null) lblReportStatus.setText("Exporting PDF…");
+        btnExportPdf.setDisable(true);
+
+        TaskUtil.run(
+            (java.util.concurrent.Callable<Void>) () -> {
+                reportService.exportPdfReport(selected, file);
+                return null;
+            },
+            ignored -> {
+                btnExportPdf.setDisable(false);
+                if (lblReportStatus != null) lblReportStatus.setText("PDF exported.");
+                showAlert("Research report exported successfully to:\n" + file.getAbsolutePath(),
+                        Alert.AlertType.INFORMATION);
+            },
+            err -> {
+                btnExportPdf.setDisable(false);
+                if (lblReportStatus != null) lblReportStatus.setText("Export failed.");
+                showAlert("Failed to export PDF: " + (err != null ? err.getMessage() : "unknown"),
+                        Alert.AlertType.ERROR);
+            }
+        );
     }
 
     private void showAlert(String msg, Alert.AlertType type) {

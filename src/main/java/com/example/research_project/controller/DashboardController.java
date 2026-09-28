@@ -2,6 +2,7 @@ package com.example.research_project.controller;
 
 import com.example.research_project.model.Paper;
 import com.example.research_project.service.PaperService;
+import com.example.research_project.util.TaskUtil;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -29,6 +30,11 @@ import java.util.Map;
  *   - Most common keywords ranking (ListView)
  *   - Recent papers library table
  *   - Quick navigation shortcuts
+ *
+ * MULTITHREADING:
+ *   All DB-heavy operations (stats, charts, keywords, recent papers) are
+ *   dispatched to background daemon threads via TaskUtil so the UI never
+ *   freezes during initialize().
  */
 public class DashboardController {
 
@@ -60,10 +66,12 @@ public class DashboardController {
     @FXML
     public void initialize() {
         setupTableColumns();
-        refreshStats();
-        loadRecentPapers();
-        loadCharts();
-        loadTopKeywords();
+
+        // Kick off all data loads concurrently in background threads
+        loadStatsAsync();
+        loadRecentPapersAsync();
+        loadChartsAsync();
+        loadTopKeywordsAsync();
 
         recentPapersTable.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2 && recentPapersTable.getSelectionModel().getSelectedItem() != null) {
@@ -93,50 +101,80 @@ public class DashboardController {
         }
     }
 
-    private void refreshStats() {
-        if (lblTotalPapers != null) lblTotalPapers.setText(String.valueOf(paperService.getTotalPaperCount()));
-        if (lblTotalNotes != null) lblTotalNotes.setText(String.valueOf(paperService.getTotalNoteCount()));
-        if (lblFavorites != null) lblFavorites.setText(String.valueOf(paperService.getFavoritePaperCount()));
-        if (lblUnread != null) lblUnread.setText(String.valueOf(paperService.getUnreadPaperCount()));
-        if (lblReading != null) lblReading.setText(String.valueOf(paperService.getReadingPaperCount()));
-        if (lblCompleted != null) lblCompleted.setText(String.valueOf(paperService.getCompletedPaperCount()));
-        if (lblCategories != null) lblCategories.setText(String.valueOf(paperService.getTotalCategoryCount()));
-        if (lblAnalysed != null) lblAnalysed.setText(String.valueOf(paperService.getAnalysedPaperCount()));
+    // ----------------------------------------------------------------
+    // Async data loaders — each runs its DB call off the FX thread
+    // ----------------------------------------------------------------
+
+    /** Loads all 8 stat counts concurrently and updates labels on the FX thread. */
+    private void loadStatsAsync() {
+        TaskUtil.run(
+            () -> new int[]{
+                paperService.getTotalPaperCount(),
+                paperService.getTotalNoteCount(),
+                paperService.getFavoritePaperCount(),
+                paperService.getUnreadPaperCount(),
+                paperService.getReadingPaperCount(),
+                paperService.getCompletedPaperCount(),
+                paperService.getTotalCategoryCount(),
+                paperService.getAnalysedPaperCount()
+            },
+            counts -> {
+                if (lblTotalPapers != null) lblTotalPapers.setText(String.valueOf(counts[0]));
+                if (lblTotalNotes  != null) lblTotalNotes .setText(String.valueOf(counts[1]));
+                if (lblFavorites   != null) lblFavorites  .setText(String.valueOf(counts[2]));
+                if (lblUnread      != null) lblUnread     .setText(String.valueOf(counts[3]));
+                if (lblReading     != null) lblReading    .setText(String.valueOf(counts[4]));
+                if (lblCompleted   != null) lblCompleted  .setText(String.valueOf(counts[5]));
+                if (lblCategories  != null) lblCategories .setText(String.valueOf(counts[6]));
+                if (lblAnalysed    != null) lblAnalysed   .setText(String.valueOf(counts[7]));
+            },
+            err -> System.err.println("Dashboard stats error: " + (err != null ? err.getMessage() : "?"))
+        );
     }
 
-    private void loadRecentPapers() {
-        List<Paper> papers = paperService.getRecentPapers(8);
-        recentPapersTable.setItems(FXCollections.observableArrayList(papers));
+    /** Loads the 8 most recent papers into the table. */
+    private void loadRecentPapersAsync() {
+        TaskUtil.run(
+            () -> paperService.getRecentPapers(8),
+            papers -> recentPapersTable.setItems(FXCollections.observableArrayList(papers)),
+            err -> System.err.println("Dashboard recent papers error: " + (err != null ? err.getMessage() : "?"))
+        );
     }
 
-    private void loadCharts() {
+    /** Loads category statistics and populates the PieChart. */
+    private void loadChartsAsync() {
         if (categoryChart == null) return;
-        Map<String, Integer> catStats = paperService.getCategoryStatistics();
-        ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
-
-        for (Map.Entry<String, Integer> entry : catStats.entrySet()) {
-            chartData.add(new PieChart.Data(entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
-        }
-
-        categoryChart.setData(chartData);
-        categoryChart.setLegendVisible(true);
+        TaskUtil.run(
+            () -> paperService.getCategoryStatistics(),
+            catStats -> {
+                ObservableList<PieChart.Data> chartData = FXCollections.observableArrayList();
+                for (Map.Entry<String, Integer> entry : catStats.entrySet()) {
+                    chartData.add(new PieChart.Data(
+                        entry.getKey() + " (" + entry.getValue() + ")", entry.getValue()));
+                }
+                categoryChart.setData(chartData);
+                categoryChart.setLegendVisible(true);
+            },
+            err -> System.err.println("Dashboard chart error: " + (err != null ? err.getMessage() : "?"))
+        );
     }
 
-    private void loadTopKeywords() {
+    /** Loads top 10 keywords and populates the ListView. */
+    private void loadTopKeywordsAsync() {
         if (topKeywordsList == null) return;
-        Map<String, Integer> topKw = paperService.getTopKeywords(10);
-        ObservableList<String> items = FXCollections.observableArrayList();
-
-        int rank = 1;
-        for (Map.Entry<String, Integer> entry : topKw.entrySet()) {
-            items.add(String.format("#%d  %s  (%d papers)", rank++, entry.getKey(), entry.getValue()));
-        }
-
-        if (items.isEmpty()) {
-            items.add("No keywords extracted yet.");
-        }
-
-        topKeywordsList.setItems(items);
+        TaskUtil.run(
+            () -> paperService.getTopKeywords(10),
+            topKw -> {
+                ObservableList<String> items = FXCollections.observableArrayList();
+                int rank = 1;
+                for (Map.Entry<String, Integer> entry : topKw.entrySet()) {
+                    items.add(String.format("#%d  %s  (%d papers)", rank++, entry.getKey(), entry.getValue()));
+                }
+                if (items.isEmpty()) items.add("No keywords extracted yet.");
+                topKeywordsList.setItems(items);
+            },
+            err -> System.err.println("Dashboard keywords error: " + (err != null ? err.getMessage() : "?"))
+        );
     }
 
     // ---- Quick action buttons ----
